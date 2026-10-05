@@ -21,7 +21,7 @@ React Router v7 (framework mode) + React 19 + TypeScript, Tailwind CSS v4, Prism
 - `app/models` — server-side data access
 - `app/components/ui` — design-system primitives (migrated Radix → Base UI, see `docs/design-harmonization`)
 - `app/tailwind.css` — theme tokens
-- `docs/*` — one subfolder per initiative/investigation (design-harmonization, auth-rework, cloudinary-migration, gallery, etc.) — check here first for prior art before starting something that sounds like it might have history
+- `docs/*` — one subfolder per initiative/investigation; active reference docs live at the top level (design-harmonization, data-access-layer, database-backups, route-module-conventions), shipped/closed ones are under `docs/archive/` — see `docs/README.md`. Check here first for prior art before starting something that sounds like it might have history
 - `prisma/schema.prisma`, `prisma/seed.ts`
 
 ## Commands
