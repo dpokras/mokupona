@@ -32,6 +32,10 @@ React Router v7 (framework mode) + React 19 + TypeScript, Tailwind CSS v4, Prism
 - `npm run test` — vitest unit tests
 - `npm run test:e2e:dev` — Cypress interactive against dev server
 
+## Public text (editable from the admin)
+
+Every public-facing string (pages, nav/footer, meta, alt/aria text, error page, emails) comes from the text catalog in `app/features/site-content/catalog/`, never a literal in JSX. Admins override any entry at `/admin/content/texts/<category>`; overrides live in the `SiteText` table and fall back to the catalog default. Use `useText()` in components, `metaText(matches, key)` in `meta`, `getServerText` for emails; route-scoped categories (privacy, impressum) are loaded by their page's loader. Never put an em dash in a public string: the catalog test and the admin editor both reject them.
+
 ## Design system
 
 `docs/design-harmonization/` has the full audit + spec (`design-system-spec.md`) distilled from a drift inventory of the old UI. It was synced to a Claude Design project on claude.ai/design (`projectId: 3208dbb3-75a3-424b-80b0-a1f2a78606aa`, project "mokupona design system"). Key decisions already made there: three-tier radius scale, named type ramp, two intentional voice/density registers (public `font-light`/comfortable vs admin `font-extrabold`/compact), token-only colors (no raw hex). Check `plan.md` in that folder for status before redoing audit work.
