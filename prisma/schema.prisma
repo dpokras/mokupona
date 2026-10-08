@@ -222,6 +222,7 @@ model Image {
   event        Event?
   boardMember  BoardMember?
   galleryLinks EventGalleryImage[]
+  siteImage    SiteImage?
 }
 
 // Grants one image membership in one dinner's gallery. Deleting a link
@@ -257,4 +258,59 @@ model BoardMember {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// An admin override of one public text; absent rows fall back to the code
+// default in app/features/site-content.
+model SiteText {
+  key   String @id
+  value String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SiteImage {
+  key String @id
+
+  image   Image  @relation(fields: [imageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  imageId String @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FaqEntry {
+  id        String  @id @default(cuid())
+  question  String
+  answer    String
+  position  Int     @default(0)
+  published Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([position])
+}
+
+// One public page view. No IP, cookie or full referrer is stored; visitorId
+// is a hash salted per day, so a visitor cannot be followed across days.
+model PageView {
+  id        String  @id @default(cuid())
+  day       String
+  path      String
+  referrer  String?
+  visitorId String
+  device    String
+
+  createdAt DateTime @default(now())
+
+  @@index([day])
+}
+
+model VisitSalt {
+  day  String @id
+  salt String
+
+  createdAt DateTime @default(now())
 }

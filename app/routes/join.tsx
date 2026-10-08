@@ -231,7 +231,7 @@ export default function Join({ loaderData, actionData }: Route.ComponentProps) {
         </fieldset>
 
         {googleOpen ? (
-          <GoogleSignInButton callbackURL={redirectTo ?? "/"} />
+          <GoogleSignInButton callbackURL={redirectTo ?? "/admin"} />
         ) : null}
 
         <p className="text-muted-foreground text-center text-sm">

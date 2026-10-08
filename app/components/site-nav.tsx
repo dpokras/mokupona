@@ -1,19 +1,13 @@
 import { ChevronRightIcon, XIcon } from "lucide-react";
-import {
-  useEffect,
-  useState,
-  type ComponentProps,
-  type ElementType,
-} from "react";
-import { Form, Link, useLocation } from "react-router";
+import { useEffect, useState, type ComponentProps } from "react";
+import { Link, useLocation } from "react-router";
 
 import { BrandLockup } from "./brand-lockup";
 import { Glow } from "./section";
 import { buttonVariants } from "./ui/button";
 
 import { InstagramIcon } from "~/components/icons";
-import { ADMIN_ROLE_NAMES } from "~/features/auth/roles";
-import { useOptionalUser } from "~/hooks/useOptionalUser";
+import { useText, type TextFunction } from "~/features/site-content/site-text";
 import { cn } from "~/lib/utils";
 
 const INSTAGRAM_URL = "https://instagram.com/mokupona";
@@ -24,22 +18,14 @@ type NavItem =
       label: string;
       to: string;
       isActive: (pathname: string) => boolean;
-      prefetch?: "intent";
     }
-  | { kind: "instagram" }
-  | { kind: "logout" };
+  | { kind: "instagram" };
 
-function buildNavItems({
-  loggedIn,
-  isModerator,
-}: {
-  loggedIn: boolean;
-  isModerator: boolean;
-}): NavItem[] {
-  const items: NavItem[] = [
+function buildNavItems(t: TextFunction): NavItem[] {
+  return [
     {
       kind: "link",
-      label: "dinners",
+      label: t("global.dinnersLink"),
       to: "/dinners",
       // a dinner's album belongs to the gallery tab, not this one
       isActive: (pathname) =>
@@ -47,7 +33,7 @@ function buildNavItems({
     },
     {
       kind: "link",
-      label: "gallery",
+      label: t("global.galleryLink"),
       to: "/gallery",
       // per-dinner albums live under /dinners/:id/gallery, so also light up
       // this tab when the reader is inside one
@@ -56,56 +42,26 @@ function buildNavItems({
     },
     {
       kind: "link",
-      label: "about",
+      label: t("global.aboutLink"),
       to: "/about",
       isActive: (pathname) => pathname.startsWith("/about"),
     },
+    {
+      kind: "link",
+      label: t("global.faqLink"),
+      to: "/faq",
+      isActive: (pathname) => pathname.startsWith("/faq"),
+    },
     { kind: "instagram" },
   ];
-
-  if (isModerator) {
-    items.push({
-      kind: "link",
-      label: "admin area",
-      to: "/admin",
-      prefetch: "intent",
-      isActive: (pathname) => pathname.startsWith("/admin"),
-    });
-  }
-
-  if (loggedIn) {
-    items.push(
-      {
-        kind: "link",
-        label: "account",
-        to: "/me",
-        isActive: (pathname) => pathname === "/me",
-      },
-      { kind: "logout" },
-    );
-  } else {
-    items.push({
-      kind: "link",
-      label: "login",
-      to: "/login",
-      isActive: (pathname) => pathname.startsWith("/login"),
-    });
-  }
-
-  return items;
 }
 
 export function SiteNav({ joinHref }: { joinHref: string }) {
-  const optionalUser = useOptionalUser();
-  const loggedIn = Boolean(optionalUser);
+  const t = useText();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const isModerator = (ADMIN_ROLE_NAMES as readonly string[]).includes(
-    optionalUser?.role.name ?? "",
-  );
-
-  const navItems = buildNavItems({ loggedIn, isModerator });
+  const navItems = buildNavItems(t);
 
   useEffect(() => {
     setMenuOpen(false);
@@ -129,9 +85,8 @@ export function SiteNav({ joinHref }: { joinHref: string }) {
                 case "link":
                   return (
                     <Link
-                      key={item.label}
+                      key={item.to}
                       to={item.to}
-                      prefetch={item.prefetch}
                       className={sectionLinkClasses(
                         item.isActive(location.pathname),
                       )}
@@ -149,22 +104,16 @@ export function SiteNav({ joinHref }: { joinHref: string }) {
                       className="hover:text-foreground"
                     >
                       <InstagramIcon className="size-5" />
-                      <span className="sr-only">instagram</span>
+                      <span className="sr-only">
+                        {t("global.instagramLink")}
+                      </span>
                     </a>
-                  );
-                case "logout":
-                  return (
-                    <Form key="logout" action="/logout" method="POST">
-                      <button className={sectionLinkClasses(false)}>
-                        logout
-                      </button>
-                    </Form>
                   );
               }
             })}
 
             <Link to={joinHref} className={buttonVariants({ size: "sm" })}>
-              join a dinner
+              {t("global.joinButton")}
             </Link>
           </div>
         </div>
@@ -173,7 +122,7 @@ export function SiteNav({ joinHref }: { joinHref: string }) {
           <BrandLockup to="/" showWordmark={false} logoClassName="size-10" />
           <button
             type="button"
-            aria-label="Open menu"
+            aria-label={t("global.openMenu")}
             aria-expanded={menuOpen}
             className="flex flex-col gap-1 py-2"
             onClick={() => setMenuOpen(true)}
@@ -204,6 +153,8 @@ function MobileMenu({
   navItems: NavItem[];
   onClose: () => void;
 }) {
+  const t = useText();
+
   return (
     <div className="bg-background fixed inset-0 z-50 flex flex-col overflow-hidden md:hidden">
       <Glow strong className="-top-10 -right-10 size-72" />
@@ -213,7 +164,7 @@ function MobileMenu({
           <BrandLockup to="/" showWordmark={false} logoClassName="size-10" />
           <button
             type="button"
-            aria-label="Close menu"
+            aria-label={t("global.closeMenu")}
             className="p-2"
             onClick={closeMenu}
           >
@@ -228,20 +179,12 @@ function MobileMenu({
             switch (item.kind) {
               case "link":
                 return (
-                  <MobileMenuLink key={item.label} to={item.to}>
+                  <MobileMenuLink key={item.to} to={item.to}>
                     {item.label}
                   </MobileMenuLink>
                 );
               case "instagram":
                 return null;
-              case "logout":
-                return (
-                  <Form key="logout" action="/logout" method="POST">
-                    <MobileMenuLink as="button" className="w-full text-left">
-                      logout
-                    </MobileMenuLink>
-                  </Form>
-                );
             }
           })}
         </div>
@@ -250,18 +193,19 @@ function MobileMenu({
           to={joinHref}
           className={cn(buttonVariants({ size: "lg" }), "mt-8")}
         >
-          join a dinner
+          {t("global.joinButton")}
         </Link>
 
         <div className="mt-auto flex flex-col gap-4 pt-9">
           <div className="text-foreground/80 flex gap-6 text-sm">
             <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer">
-              instagram
+              {t("global.instagramLink")}
             </a>
-            <Link to="/privacy">privacy policy</Link>
+            <Link to="/privacy">{t("global.privacyLink")}</Link>
+            <Link to="/impressum">{t("global.impressumLink")}</Link>
           </div>
           <span className="text-muted-foreground text-xs">
-            made with love in zürich
+            {t("global.tagline")}
           </span>
         </div>
       </div>
@@ -269,19 +213,13 @@ function MobileMenu({
   );
 }
 
-type MobileMenuLinkProps =
-  | (ComponentProps<typeof Link> & { as?: never })
-  | (Omit<ComponentProps<typeof Link>, "to"> & {
-      as: ElementType;
-      to?: never;
-    });
-
-function MobileMenuLink(props: MobileMenuLinkProps) {
-  const { as, className, children, ...rest } = props;
-  const Component = as ?? Link;
-
+function MobileMenuLink({
+  className,
+  children,
+  ...rest
+}: ComponentProps<typeof Link>) {
   return (
-    <Component
+    <Link
       className={cn(
         "flex items-center justify-between border-b py-4 text-xl tracking-tight",
         className,
@@ -290,6 +228,6 @@ function MobileMenuLink(props: MobileMenuLinkProps) {
     >
       {children}
       <ChevronRightIcon className="text-primary size-5" />
-    </Component>
+    </Link>
   );
 }

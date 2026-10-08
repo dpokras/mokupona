@@ -44,8 +44,10 @@ describe("smoke tests", () => {
     const loginForm = fakeSignupForm();
 
     cy.visitAndCheck("/");
+    cy.findByRole("link", { name: /login/i }).should("not.exist");
 
-    cy.findByRole("link", { name: /login/i }).click();
+    cy.visitAndCheck("/admin");
+    cy.location("pathname").should("equal", "/login");
     cy.findAllByRole("link", { name: /sign up/i })
       .first()
       .click();
@@ -60,8 +62,9 @@ describe("smoke tests", () => {
 
     fillLoginForm(loginForm.email, loginForm.password);
 
-    cy.findByRole("button", { name: /logout/i }).click();
-    cy.findByRole("link", { name: /login/i });
+    cy.findByText(/doesn't have access to the admin area/i);
+    cy.findByRole("button", { name: /log out/i }).click();
+    cy.location("pathname").should("equal", "/");
   });
 
   it("should re-send the verification link on an unverified login attempt", () => {

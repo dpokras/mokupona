@@ -1,4 +1,5 @@
-import { NavLink } from "react-router";
+import { LogOutIcon } from "lucide-react";
+import { Form, NavLink } from "react-router";
 
 import { cn } from "~/lib/utils";
 
@@ -12,10 +13,14 @@ export interface AdminTabCounts {
 const TABS = [
   { to: "/admin", label: "overview", end: true },
   { to: "/admin/dinners", label: "dinners", countKey: "dinners" },
+  { to: "/admin/guests", label: "guests" },
   { to: "/admin/locations", label: "locations", countKey: "locations" },
   { to: "/admin/board-members", label: "board", countKey: "board" },
+  { to: "/admin/content", label: "site content" },
+  { to: "/admin/visits", label: "visits" },
   { to: "/admin/users", label: "users", countKey: "users", adminOnly: true },
   { to: "/admin/settings", label: "settings", adminOnly: true },
+  { to: "/admin/account", label: "account" },
 ] as const;
 
 export function AdminTabs({
@@ -59,6 +64,15 @@ export function AdminTabs({
           </NavLink>
         );
       })}
+      <Form method="POST" action="/logout" className="ml-auto flex">
+        <button
+          type="submit"
+          className="text-muted-foreground hover:text-foreground inline-flex items-center gap-2 py-4 text-base font-semibold transition-colors"
+        >
+          <LogOutIcon className="size-4" />
+          log out
+        </button>
+      </Form>
     </nav>
   );
 }

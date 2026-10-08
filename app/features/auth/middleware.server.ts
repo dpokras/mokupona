@@ -62,7 +62,7 @@ export async function anonymousAuthPageLoader({
   context: Readonly<RouterContextProvider>;
 }) {
   const user = await context.get(optionalUserContext)();
-  if (user) throw redirect("/");
+  if (user) throw redirect("/admin");
   return {
     googleEnabled: googleAuthEnabled && isAuthToggleEnabled("google"),
     emailSignupEnabled: isAuthToggleEnabled("emailSignup"),

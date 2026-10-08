@@ -2,6 +2,7 @@ import { Link } from "react-router";
 
 import { Logo } from "./logo";
 
+import { useText } from "~/features/site-content/site-text";
 import { cn } from "~/lib/utils";
 
 export interface BrandLockupProps {
@@ -24,15 +25,16 @@ export function BrandLockup({
   wordmarkClassName,
   showWordmark = true,
 }: BrandLockupProps) {
+  const t = useText();
   const content = (
     <>
       <Logo className={cn("size-5", logoClassName)} />
       {showWordmark ? (
         <span className={cn("font-semibold", wordmarkClassName)}>
-          moku pona
+          {t("global.brandName")}
         </span>
       ) : (
-        <span className="sr-only">moku pona</span>
+        <span className="sr-only">{t("global.brandName")}</span>
       )}
     </>
   );

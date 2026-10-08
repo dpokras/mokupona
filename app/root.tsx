@@ -24,6 +24,8 @@ import {
   resolveOptionalUserMiddleware,
 } from "~/features/auth/middleware.server";
 import { getHoneypotInputProps } from "~/features/forms/honeypot.server";
+import { MatchedSiteTextProvider } from "~/features/site-content/site-text";
+import { loadRootSiteTexts } from "~/features/site-content/site-texts.server";
 import stylesheet from "~/tailwind.css?url";
 
 export const links: LinksFunction = () => [
@@ -53,6 +55,7 @@ export const loader = async ({ request, context }: Route.LoaderArgs) => {
   const domainUrl = getDomainUrl(request);
   const user = await context.get(optionalUserContext)();
   const nextEvent = await getNextEvent();
+  const siteTexts = await loadRootSiteTexts();
   const { toast, headers } = await getToast(request);
   const allowIndexing = process.env.ALLOW_INDEXING !== "false";
   const cypressSupport = process.env.CYPRESS_SUPPORT === "true";
@@ -69,6 +72,7 @@ export const loader = async ({ request, context }: Route.LoaderArgs) => {
       imageProvider,
       cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME ?? null,
       honeypot: getHoneypotInputProps(),
+      siteTexts,
     },
     { headers: headers ?? undefined },
   );
@@ -118,13 +122,15 @@ function Document({
   const joinHref = nextDinnerId ? `/dinners/${nextDinnerId}` : "/dinners";
 
   return (
-    <div className="flex min-h-full flex-col">
-      <SiteNav joinHref={joinHref} />
-      <div className="flex grow flex-col">
-        <Outlet />
+    <MatchedSiteTextProvider>
+      <div className="flex min-h-full flex-col">
+        <SiteNav joinHref={joinHref} />
+        <div className="flex grow flex-col">
+          <Outlet />
+        </div>
+        <Footer />
       </div>
-      <Footer />
-    </div>
+    </MatchedSiteTextProvider>
   );
 }
 

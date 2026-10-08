@@ -42,7 +42,7 @@ export const action = async ({ request, context }: Route.ActionArgs) => {
   }
 
   const { email, password, remember } = submission.value;
-  const redirectTo = safeRedirect(submission.value.redirectTo, "/");
+  const redirectTo = safeRedirect(submission.value.redirectTo, "/admin");
 
   try {
     const { headers } = await auth.api.signInEmail({
@@ -101,7 +101,7 @@ export default function LoginPage({
   actionData,
 }: Route.ComponentProps) {
   const [searchParams] = useSearchParams();
-  const redirectTo = searchParams.get("redirectTo") || "/dinners";
+  const redirectTo = searchParams.get("redirectTo") || "/admin";
   const authError = actionData?.authError ?? null;
   const [form, fields] = useForm({
     lastResult: actionData?.result,
