@@ -1,12 +1,15 @@
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { createRoutesStub } from "react-router";
 import { describe, expect, it, vi } from "vitest";
 
+import { DEFAULT_SITE_TEXTS } from "../../../../test/site-texts";
 import type { GalleryImageModel } from "../view-models";
 
 import { MosaicGallery } from "./mosaic";
 import type { GalleryLayoutProps } from "./types";
 
+import { SiteTextProvider } from "~/features/site-content/site-text";
+import type { SiteTexts } from "~/features/site-content/types";
 import type { ImageProviderConfig } from "~/shared/image";
 
 // the tiles render OptimizedImage, which reads delivery config from the root
@@ -41,12 +44,19 @@ function makeImage(
   };
 }
 
-function renderMosaic(props: GalleryLayoutProps) {
+function renderMosaic(
+  props: GalleryLayoutProps,
+  texts: SiteTexts = DEFAULT_SITE_TEXTS,
+) {
   const Stub = createRoutesStub([
     { path: "/", Component: () => <MosaicGallery {...props} /> },
   ]);
 
-  return render(<Stub initialEntries={["/"]} />);
+  return render(
+    <SiteTextProvider texts={texts}>
+      <Stub initialEntries={["/"]} />
+    </SiteTextProvider>,
+  );
 }
 
 /**
@@ -325,6 +335,40 @@ describe("mosaic layout", () => {
     expect(screen.getByText("no photos yet")).toBeInTheDocument();
     expect(screen.getByText(/nothing on the wall yet/)).toBeInTheDocument();
     expect(screen.queryByRole("img")).not.toBeInTheDocument();
+  });
+
+  it("shows the empty state an admin wrote", () => {
+    renderMosaic(
+      { images: [] },
+      { ...DEFAULT_SITE_TEXTS, "gallery.wallEmptyTitle": "the wall is bare" },
+    );
+
+    expect(screen.getByText("the wall is bare")).toBeInTheDocument();
+  });
+
+  it("opens the viewer with its controls labelled from the site texts", async () => {
+    const { container } = renderMosaic(
+      { images: [makeImage({ id: "a" }), makeImage({ id: "b" })] },
+      {
+        ...DEFAULT_SITE_TEXTS,
+        "gallery.viewerPrevious": "earlier photo",
+        "gallery.viewerNext": "later photo",
+        "gallery.viewerClose": "back to the wall",
+      },
+    );
+
+    fireEvent.click(within(wallsOf(container)[0]).getAllByRole("button")[0]);
+
+    const viewer = await screen.findByRole("dialog");
+    expect(
+      within(viewer).getByRole("button", { name: "earlier photo" }),
+    ).toBeInTheDocument();
+    expect(
+      within(viewer).getByRole("button", { name: "later photo" }),
+    ).toBeInTheDocument();
+    expect(
+      within(viewer).getByRole("button", { name: "back to the wall" }),
+    ).toBeInTheDocument();
   });
 
   it("renders nothing at all on an empty section variant", () => {

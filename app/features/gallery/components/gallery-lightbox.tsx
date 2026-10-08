@@ -11,6 +11,7 @@ import {
 } from "~/components/ui/carousel";
 import { Dialog, DialogContent, DialogTitle } from "~/components/ui/dialog";
 import { formatEventMonthYear } from "~/features/events/date-format";
+import { useText } from "~/features/site-content/site-text";
 import { cn } from "~/lib/utils";
 import { getImageUrl, RESPONSIVE_IMAGE_WIDTHS } from "~/shared/image";
 import { useImageConfig } from "~/shared/root-data";
@@ -94,10 +95,17 @@ export function GalleryLightbox({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const t = useText();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[calc(100dvh-2rem)] max-w-5xl overflow-y-auto">
-        <DialogTitle className="sr-only">gallery</DialogTitle>
+      <DialogContent
+        className="max-h-[calc(100dvh-2rem)] max-w-5xl overflow-y-auto"
+        closeLabel={t("gallery.viewerClose")}
+      >
+        <DialogTitle className="sr-only">
+          {t("gallery.viewerTitle")}
+        </DialogTitle>
         <Carousel opts={{ startIndex, loop: true }}>
           <CarouselContent>
             {images.map((image) => (
@@ -106,8 +114,14 @@ export function GalleryLightbox({
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className={cn(ARROW_CLASS, "left-2")} />
-          <CarouselNext className={cn(ARROW_CLASS, "right-2")} />
+          <CarouselPrevious
+            className={cn(ARROW_CLASS, "left-2")}
+            aria-label={t("gallery.viewerPrevious")}
+          />
+          <CarouselNext
+            className={cn(ARROW_CLASS, "right-2")}
+            aria-label={t("gallery.viewerNext")}
+          />
         </Carousel>
       </DialogContent>
     </Dialog>

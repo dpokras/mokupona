@@ -5,7 +5,13 @@ import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { latestMailPath } from "./capture.shared";
-import { createMailProvider } from "./mail.server";
+import { createMailProvider, sendTemplate } from "./mail.server";
+
+import { saveCategoryTexts } from "~/features/site-content/site-texts.server";
+
+vi.hoisted(() => {
+  vi.stubEnv("MAIL_PROVIDER", "console");
+});
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -63,5 +69,26 @@ describe("capture provider", () => {
       await readFile(latestMailPath("a@example.com", dir), "utf8"),
     );
     expect(latest).toMatchObject({ subject: "two", text: "2" });
+  });
+});
+
+describe("sendTemplate", () => {
+  afterEach(async () => {
+    await saveCategoryTexts("emails", {
+      verifySubject: "Verify your email address",
+    });
+  });
+
+  it("sends the email texts as an admin last saved them", async () => {
+    const info = vi.spyOn(console, "info").mockImplementation(() => {});
+    await saveCategoryTexts("emails", { verifySubject: "Welcome aboard" });
+
+    await sendTemplate("verifyEmail", "a@example.com", {
+      url: "https://mokupona.ch/verify?token=t",
+    });
+
+    expect(info).toHaveBeenCalledWith(
+      expect.stringContaining("Subject: Welcome aboard"),
+    );
   });
 });

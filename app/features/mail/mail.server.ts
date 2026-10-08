@@ -2,10 +2,15 @@ import type { MailBody } from "./compose";
 import { createCaptureProvider } from "./providers/capture.server";
 import { createConsoleProvider } from "./providers/console.server";
 import { createResendProvider } from "./providers/resend.server";
-import { mailTemplates } from "./templates";
-import type { MailTemplateName, MailTemplateProps } from "./templates";
+import { mailTemplates, mailText } from "./templates";
+import type {
+  MailTemplateName,
+  MailTemplateProps,
+  MailText,
+} from "./templates";
 import type { MailProvider } from "./types";
 
+import { loadSiteTexts } from "~/features/site-content/site-texts.server";
 import { requestLogger } from "~/logger/request-context.server";
 import { logger } from "~/logger.server";
 import { singleton } from "~/utils/singleton.server";
@@ -48,10 +53,12 @@ export async function sendTemplate<Name extends MailTemplateName>(
 ): Promise<void> {
   const render = mailTemplates[name] as (
     props: MailTemplateProps<Name>,
+    t: MailText,
   ) => MailBody;
 
   try {
-    await provider.send({ to, ...render(props) });
+    const t = mailText(await loadSiteTexts("emails"));
+    await provider.send({ to, ...render(props, t) });
   } catch (error) {
     requestLogger.error(
       { template: name, email: to, error },

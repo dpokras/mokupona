@@ -2,15 +2,19 @@ import type { MailMessage } from "./types";
 
 type Block =
   | { kind: "paragraph"; text: string }
-  | { kind: "action"; label: string; url: string }
+  | { kind: "action"; label: string; url: string; fallbackHint: string }
   | { kind: "note"; text: string };
 
 export function paragraph(text: string): Block {
   return { kind: "paragraph", text };
 }
 
-export function action(label: string, url: string): Block {
-  return { kind: "action", label, url };
+export function action(
+  label: string,
+  url: string,
+  fallbackHint: string,
+): Block {
+  return { kind: "action", label, url, fallbackHint };
 }
 
 export function note(text: string): Block {
@@ -64,15 +68,19 @@ function renderHtml(subject: string, blocks: Block[]): string {
 function renderBlock(block: Block): string {
   switch (block.kind) {
     case "paragraph":
-      return `<p>${escapeHtml(block.text)}</p>`;
+      return `<p>${escapeText(block.text)}</p>`;
     case "note":
-      return `<p style="${NOTE_STYLE}">${escapeHtml(block.text)}</p>`;
+      return `<p style="${NOTE_STYLE}">${escapeText(block.text)}</p>`;
     case "action":
       return [
         `<p><a href="${escapeHtml(block.url)}">${escapeHtml(block.label)}</a></p>`,
-        `<p style="${NOTE_STYLE}">If the link doesn't work, copy and paste this address into your browser:<br>${escapeHtml(block.url)}</p>`,
+        `<p style="${NOTE_STYLE}">${escapeText(block.fallbackHint)}<br>${escapeHtml(block.url)}</p>`,
       ].join("\n      ");
   }
+}
+
+function escapeText(value: string): string {
+  return escapeHtml(value).replace(/\n/g, "<br>");
 }
 
 function escapeHtml(value: string): string {

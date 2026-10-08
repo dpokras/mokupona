@@ -13,6 +13,7 @@ import { formatEventDateLine } from "~/features/events/date-format";
 import { isPastEvent } from "~/features/events/event-status";
 import { listGalleryImagesForEvent } from "~/features/gallery/gallery.server";
 import { MosaicGallery } from "~/features/gallery/layouts/mosaic";
+import { metaText, useText } from "~/features/site-content/site-text";
 import { getEventById } from "~/models/event.server";
 import { requireFound } from "~/shared/http.server";
 
@@ -43,19 +44,26 @@ export async function loader({ params }: Route.LoaderArgs) {
   };
 }
 
-export const meta: Route.MetaFunction = ({ loaderData }) => [
-  { title: loaderData ? `${loaderData.dinner.title} — gallery` : "Gallery" },
+export const meta: Route.MetaFunction = ({ loaderData, matches }) => [
+  {
+    title: loaderData
+      ? metaText(matches, "gallery.albumMetaTitle", {
+          dinner: loaderData.dinner.title,
+        })
+      : metaText(matches, "gallery.metaTitle"),
+  },
 ];
 
 export default function DinnerGalleryPage({
   loaderData,
 }: Route.ComponentProps) {
   const { dinner, images } = loaderData;
+  const t = useText();
   const date = new Date(dinner.date);
 
   return (
     <PageContainer className="grow pt-14 pb-32 md:pt-20">
-      <BackLink to="/gallery">all galleries</BackLink>
+      <BackLink to="/gallery">{t("gallery.albumBackLink")}</BackLink>
 
       <div className="mb-14 flex flex-col gap-4 md:mb-20">
         <Eyebrow variant="tracked" tone="primary">

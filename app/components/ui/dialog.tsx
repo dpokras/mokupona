@@ -32,12 +32,14 @@ const DialogContent = ({
   className,
   overlayClassName,
   showClose = true,
+  closeLabel = "Close",
   children,
   ref,
   ...props
 }: DialogPrimitive.Popup.Props & {
   overlayClassName?: string;
   showClose?: boolean;
+  closeLabel?: string;
 }) => (
   <DialogPrimitive.Portal>
     <DialogOverlay className={overlayClassName} />
@@ -53,7 +55,7 @@ const DialogContent = ({
       {showClose ? (
         <DialogPrimitive.Close className="text-muted-foreground hover:text-foreground focus-visible:ring-ring absolute top-5 right-5 rounded-lg transition-colors focus-visible:ring-2 focus-visible:outline-hidden">
           <XIcon className="size-4" />
-          <span className="sr-only">Close</span>
+          <span className="sr-only">{closeLabel}</span>
         </DialogPrimitive.Close>
       ) : null}
     </DialogPrimitive.Popup>

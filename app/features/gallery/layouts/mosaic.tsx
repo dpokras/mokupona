@@ -9,6 +9,7 @@ import type { GalleryLayoutProps } from "./types";
 import { OptimizedImage } from "~/components/optimized-image";
 import { Eyebrow } from "~/components/section";
 import { formatEventMonthYear } from "~/features/events/date-format";
+import { useText } from "~/features/site-content/site-text";
 import { cn } from "~/lib/utils";
 import type { ImageMetadata } from "~/models/image.server";
 
@@ -187,6 +188,7 @@ export function MosaicGallery({
   images,
   variant = "page",
 }: GalleryLayoutProps) {
+  const t = useText();
   const isSection = variant === "section";
   const [openedAt, setOpenedAt] = useState(0);
   const [open, setOpen] = useState(false);
@@ -218,10 +220,10 @@ export function MosaicGallery({
     return (
       <div className="flex flex-col items-center gap-3 px-6 py-16 text-center md:py-24">
         <Eyebrow variant="tracked" tone="label">
-          no photos yet
+          {t("gallery.wallEmptyTitle")}
         </Eyebrow>
-        <p className="text-muted-foreground max-w-xs text-sm font-light">
-          nothing on the wall yet. the next dinner will hang the first ones.
+        <p className="text-muted-foreground max-w-xs text-sm font-light whitespace-pre-line">
+          {t("gallery.wallEmptyBody")}
         </p>
       </div>
     );
