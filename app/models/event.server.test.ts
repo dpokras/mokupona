@@ -437,6 +437,10 @@ describe("events outlive their supporting entities", () => {
     ).resolves.not.toBeNull();
   });
 
+  it("answers null for an address that is already gone", async () => {
+    await expect(deleteAddress("no-such-address")).resolves.toBeNull();
+  });
+
   it("deletes an address once its events are gone", async () => {
     const data = await buildEventData();
     const event = await createEvent(data);

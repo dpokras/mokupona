@@ -42,14 +42,15 @@ export async function resendInvite({
 }: {
   id: string;
   origin: string;
-}): Promise<void> {
+}): Promise<string | null> {
   const invite = await refreshInvite(id);
   if (!invite) {
     requestLogger.warn(
       { inviteId: id },
       "Re-send found no live invite to refresh",
     );
-    return;
+    return null;
   }
   await sendInviteMail({ invite, origin });
+  return invite.email;
 }

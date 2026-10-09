@@ -62,6 +62,7 @@ import { cn } from "~/lib/utils";
 import { listPendingInvites, revokeInvite } from "~/models/invite.server";
 import { listUsersWithRoleName } from "~/models/user.server";
 import { getDomainUrl, unknownIntent } from "~/shared/http.server";
+import { redirectWithToast } from "~/utils/toast.server";
 
 const inviteSchema = z.object({
   intent: z.literal("invite"),
@@ -124,10 +125,16 @@ export async function action({ request, context }: Route.ActionArgs) {
 
   if (intent === "resend") {
     const id = formData.get("inviteId");
-    if (typeof id === "string") {
-      await resendInvite({ id, origin: getDomainUrl(request) });
-    }
-    return data({ result: null, sentTo: null });
+    const resentTo =
+      typeof id === "string"
+        ? await resendInvite({ id, origin: getDomainUrl(request) })
+        : null;
+    return resentTo
+      ? data({ result: null, sentTo: resentTo })
+      : redirectWithToast("/admin/users", {
+          type: "error",
+          title: "That invite is no longer open, so nothing was sent",
+        });
   }
 
   throw unknownIntent();

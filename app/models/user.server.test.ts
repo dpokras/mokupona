@@ -1,9 +1,14 @@
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 
-import { buildEventData, createTestUser } from "../../test/factories";
+import {
+  buildEventData,
+  createTestUser,
+  ensureAuthRoles,
+} from "../../test/factories";
 
 import { createEvent } from "./event.server";
-import { deleteNonAdminUserById } from "./user.server";
+import { getRoleByName } from "./role.server";
+import { deleteNonAdminUserById, updateNonAdminUserRole } from "./user.server";
 
 import { prisma } from "~/db.server";
 
@@ -48,5 +53,38 @@ describe("deleteNonAdminUserById", () => {
 
   it("treats a missing user as an idempotent no-op", async () => {
     await expect(deleteNonAdminUserById("does-not-exist")).resolves.toBeNull();
+  });
+});
+
+describe("updateNonAdminUserRole", () => {
+  beforeAll(async () => {
+    await ensureAuthRoles();
+  });
+
+  it("changes a non-admin's role and reports it", async () => {
+    const user = await createTestUser("user");
+    const moderator = await getRoleByName("moderator");
+
+    await expect(updateNonAdminUserRole(user.id, moderator!.id)).resolves.toBe(
+      true,
+    );
+  });
+
+  it("leaves admins and missing users alone without throwing", async () => {
+    const admin = await createTestUser("admin");
+    const user = await getRoleByName("user");
+
+    await expect(updateNonAdminUserRole(admin.id, user!.id)).resolves.toBe(
+      false,
+    );
+    await expect(
+      updateNonAdminUserRole("no-such-user", user!.id),
+    ).resolves.toBe(false);
+    await expect(
+      prisma.user.findUnique({
+        where: { id: admin.id },
+        select: { role: { select: { name: true } } },
+      }),
+    ).resolves.toMatchObject({ role: { name: "admin" } });
   });
 });

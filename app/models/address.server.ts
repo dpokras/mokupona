@@ -76,8 +76,12 @@ export async function updateAddress(
   });
 }
 
+/** Null when the address is gone already or dinners still point at it. */
 export async function deleteAddress(id: string): Promise<Address | null> {
   return prisma.$transaction(async (tx) => {
+    const address = await tx.address.findUnique({ where: { id } });
+    if (!address) return null;
+
     const inUse = await tx.event.count({ where: { addressId: id } });
     if (inUse > 0) {
       requestLogger.warn(

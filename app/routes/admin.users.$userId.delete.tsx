@@ -7,6 +7,7 @@ import {
   userContext,
 } from "~/features/auth/middleware.server";
 import { deleteNonAdminUserById } from "~/models/user.server";
+import { redirectWithToast } from "~/utils/toast.server";
 
 export async function loader() {
   return redirect("/admin/users");
@@ -22,11 +23,17 @@ export async function action({ params, context }: Route.ActionArgs) {
     targetUserId: userId,
   };
   const log = context.get(requestLoggerContext);
-  if (deleted) {
-    log.warn(audit, "Admin deleted a user account");
-  } else {
+  if (!deleted) {
     log.warn(audit, "Admin account deletion was refused");
+    return redirectWithToast("/admin/users", {
+      type: "error",
+      title: "That account can't be deleted",
+    });
   }
 
-  return redirect("/admin/users");
+  log.warn(audit, "Admin deleted a user account");
+  return redirectWithToast("/admin/users", {
+    type: "success",
+    title: "Account deleted",
+  });
 }

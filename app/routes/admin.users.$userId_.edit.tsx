@@ -22,6 +22,7 @@ import {
   updateNonAdminUserRole,
 } from "~/models/user.server";
 import { requireFound } from "~/shared/http.server";
+import { redirectWithToast } from "~/utils/toast.server";
 
 const schema = z.object({
   roleName: z.enum(INVITABLE_ROLES),
@@ -74,7 +75,12 @@ export async function action({ request, params, context }: Route.ActionArgs) {
 
   const { roleId, roleName } = submission.value;
 
-  await updateNonAdminUserRole(userId, roleId);
+  if (!(await updateNonAdminUserRole(userId, roleId))) {
+    return redirectWithToast("/admin/users", {
+      type: "error",
+      title: "That role can't be changed",
+    });
+  }
 
   context.get(requestLoggerContext).warn(
     {

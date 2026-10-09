@@ -76,14 +76,16 @@ export async function setUserEmailVerified(id: string): Promise<void> {
   });
 }
 
+/** False when the user is missing or an admin, whose role never changes here. */
 export async function updateNonAdminUserRole(
   userId: string,
   roleId: string,
-): Promise<void> {
-  await prisma.user.update({
+): Promise<boolean> {
+  const { count } = await prisma.user.updateMany({
     where: { id: userId, role: { NOT: { name: "admin" } } },
     data: { roleId },
   });
+  return count > 0;
 }
 
 async function deleteUserInTx(tx: Prisma.TransactionClient, id: string) {
