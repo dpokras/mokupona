@@ -40,4 +40,35 @@ describe("buildCSVObject", () => {
     expect(size).toBe(Buffer.byteLength(data, "utf8"));
     expect(size).toBeGreaterThan(data.length);
   });
+
+  it("neutralizes cells a spreadsheet would run as a formula", () => {
+    const { data } = buildCSVObject(
+      ["Name"],
+      [
+        ['=HYPERLINK("https://evil.example","click")'],
+        ["+cmd|' /C calc'!A0"],
+        ["-2+3"],
+        ["@SUM(A1)"],
+        ["\tTabbed"],
+      ],
+    );
+
+    expect(data).toBe(
+      `${BOM}Name\n"'=HYPERLINK(""https://evil.example"",""click"")"\n'+cmd|' /C calc'!A0\n'-2+3\n'@SUM(A1)\n'\tTabbed\n`,
+    );
+  });
+
+  it("keeps phone numbers and ordinary text as typed", () => {
+    const { data } = buildCSVObject(
+      ["Phone", "Note"],
+      [
+        ["+41 79 123 45 67", "vegan - no nuts"],
+        ["(044) 123-45-67", "-"],
+      ],
+    );
+
+    expect(data).toBe(
+      `${BOM}Phone,Note\n+41 79 123 45 67,vegan - no nuts\n(044) 123-45-67,-\n`,
+    );
+  });
 });

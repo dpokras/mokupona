@@ -28,7 +28,18 @@ export function buildCSVObject(
   };
 }
 
-function sanitizeCSVValue(value: string) {
+const FORMULA_TRIGGER = /^[=+\-@\t\r]/;
+// Phone numbers and plain numbers start with + or - but hold no letters, so
+// they can't call a spreadsheet function and are kept as typed.
+const NUMBER_LIKE = /^[+-]?[\d\s().\/-]+$/;
+
+function neutralizeFormula(value: string) {
+  if (!FORMULA_TRIGGER.test(value) || NUMBER_LIKE.test(value)) return value;
+  return "'" + value;
+}
+
+function sanitizeCSVValue(rawValue: string) {
+  const value = neutralizeFormula(rawValue);
   const needsSanitization = [",", "\n", "\r", '"'].some((character) =>
     value.includes(character),
   );
