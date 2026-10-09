@@ -1,5 +1,5 @@
 import { ChevronRightIcon, XIcon } from "lucide-react";
-import { useEffect, useState, type ComponentProps } from "react";
+import { useEffect, useRef, useState, type ComponentProps } from "react";
 import { Link, useLocation } from "react-router";
 
 import { BrandLockup } from "./brand-lockup";
@@ -11,6 +11,7 @@ import { useText, type TextFunction } from "~/features/site-content/site-text";
 import { cn } from "~/lib/utils";
 
 const INSTAGRAM_URL = "https://instagram.com/mokupona";
+const MOBILE_MENU_ID = "mobile-menu";
 
 type NavItem =
   | {
@@ -60,6 +61,7 @@ export function SiteNav({ joinHref }: { joinHref: string }) {
   const t = useText();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const openButtonRef = useRef<HTMLButtonElement>(null);
 
   const navItems = buildNavItems(t);
 
@@ -121,9 +123,11 @@ export function SiteNav({ joinHref }: { joinHref: string }) {
         <div className="flex h-14 items-center justify-between px-5 md:hidden">
           <BrandLockup to="/" showWordmark={false} logoClassName="size-10" />
           <button
+            ref={openButtonRef}
             type="button"
             aria-label={t("global.openMenu")}
             aria-expanded={menuOpen}
+            aria-controls={MOBILE_MENU_ID}
             className="flex flex-col gap-1 py-2"
             onClick={() => setMenuOpen(true)}
           >
@@ -137,7 +141,10 @@ export function SiteNav({ joinHref }: { joinHref: string }) {
         <MobileMenu
           joinHref={joinHref}
           navItems={navItems}
-          onClose={() => setMenuOpen(false)}
+          onClose={() => {
+            setMenuOpen(false);
+            openButtonRef.current?.focus();
+          }}
         />
       ) : null}
     </>
@@ -154,9 +161,58 @@ function MobileMenu({
   onClose: () => void;
 }) {
   const t = useText();
+  const panelRef = useRef<HTMLDivElement>(null);
+  const closeMenuRef = useRef(closeMenu);
+  closeMenuRef.current = closeMenu;
+
+  useEffect(() => {
+    const panel = panelRef.current;
+    if (!panel) return;
+
+    const focusable = () =>
+      Array.from(
+        panel.querySelectorAll<HTMLElement>("a[href], button:not([disabled])"),
+      );
+    focusable()[0]?.focus();
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        closeMenuRef.current();
+        return;
+      }
+      if (event.key !== "Tab") return;
+
+      const elements = focusable();
+      const first = elements[0];
+      const last = elements[elements.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
+    }
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, []);
 
   return (
-    <div className="bg-background fixed inset-0 z-50 flex flex-col overflow-hidden md:hidden">
+    <div
+      ref={panelRef}
+      id={MOBILE_MENU_ID}
+      role="dialog"
+      aria-modal="true"
+      aria-label={t("global.menuTitle")}
+      className="bg-background fixed inset-0 z-50 flex flex-col overflow-hidden md:hidden"
+    >
       <Glow strong className="-top-10 -right-10 size-72" />
 
       <div className="relative border-b">

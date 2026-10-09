@@ -43,6 +43,14 @@ export async function countEvents(): Promise<number> {
   return prisma.event.count();
 }
 
+export async function listEventIds(): Promise<string[]> {
+  const events = await prisma.event.findMany({
+    select: { id: true },
+    orderBy: { date: "desc" },
+  });
+  return events.map(({ id }) => id);
+}
+
 export async function getEventsWithAddress(): Promise<
   (EventWithImage & { address: Address; galleryImageCount: number })[]
 > {

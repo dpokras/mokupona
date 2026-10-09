@@ -6,6 +6,7 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLocation,
 } from "react-router";
 
 import type { Route } from "./+types/root";
@@ -25,7 +26,10 @@ import {
 } from "~/features/auth/middleware.server";
 import { getHoneypotInputProps } from "~/features/forms/honeypot.server";
 import { loadSiteImages } from "~/features/site-content/site-images.server";
-import { MatchedSiteTextProvider } from "~/features/site-content/site-text";
+import {
+  MatchedSiteTextProvider,
+  useText,
+} from "~/features/site-content/site-text";
 import { loadRootSiteTexts } from "~/features/site-content/site-texts.server";
 import { PageViewBeacon } from "~/features/visits/page-view-beacon";
 import { useNonce } from "~/shared/nonce";
@@ -92,8 +96,9 @@ export const loader = async ({ request, context }: Route.LoaderArgs) => {
 };
 
 export default function App({ loaderData }: Route.ComponentProps) {
-  const { allowIndexing, cypressSupport } = loaderData;
+  const { allowIndexing, cypressSupport, domainUrl } = loaderData;
   const nonce = useNonce();
+  const { pathname } = useLocation();
 
   return (
     <html lang="en" className="h-full scroll-smooth">
@@ -109,6 +114,7 @@ export default function App({ loaderData }: Route.ComponentProps) {
           <meta name="robots" content="noindex, nofollow" />
         )}
         <Meta />
+        <link rel="canonical" href={`${domainUrl}${pathname}`} />
         <Links />
       </head>
       <body className="dark h-full">
@@ -138,14 +144,33 @@ function Document({
   return (
     <MatchedSiteTextProvider>
       <div className="flex min-h-full flex-col">
+        <SkipToContent />
         <SiteNav joinHref={joinHref} />
-        <div className="flex grow flex-col">
+        <div
+          id={MAIN_CONTENT_ID}
+          tabIndex={-1}
+          className="flex grow flex-col outline-none"
+        >
           <Outlet />
         </div>
         <Footer />
         <PageViewBeacon />
       </div>
     </MatchedSiteTextProvider>
+  );
+}
+
+const MAIN_CONTENT_ID = "main-content";
+
+function SkipToContent() {
+  const t = useText();
+  return (
+    <a
+      href={`#${MAIN_CONTENT_ID}`}
+      className="bg-background text-foreground sr-only z-50 border px-4 py-2 text-sm focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
+    >
+      {t("global.skipToContent")}
+    </a>
   );
 }
 

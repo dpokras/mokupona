@@ -83,6 +83,20 @@ export const globalTexts = defineTextCategory({
       kind: "line",
       default: "close menu",
     },
+    menuTitle: {
+      group: "Menu and footer links",
+      label: "Phone menu name (screen readers)",
+      help: "What screen readers call the menu that opens on phones.",
+      kind: "line",
+      default: "menu",
+    },
+    skipToContent: {
+      group: "Menu and footer links",
+      label: "Skip to content link",
+      help: "Only appears for keyboard users, as the first thing they reach on every page.",
+      kind: "line",
+      default: "skip to content",
+    },
     footerExploreHeading: {
       group: "Menu and footer links",
       label: "Footer heading above the page links",
