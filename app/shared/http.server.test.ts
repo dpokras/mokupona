@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { getClientIPAddress } from "./http.server";
+import { getClientIPAddress, getDomainUrl, safeRedirect } from "./http.server";
 
 function requestWith(headers: Record<string, string>) {
   return new Request("https://mokupona.ch/", { headers });
@@ -55,5 +55,38 @@ describe("getClientIPAddress", () => {
 
   it("returns null when the request did not pass through the proxy", () => {
     expect(getClientIPAddress(requestWith({}))).toBe(null);
+  });
+});
+
+describe("safeRedirect", () => {
+  it("keeps paths on this site", () => {
+    expect(safeRedirect("/admin/users?tab=1")).toBe("/admin/users?tab=1");
+  });
+
+  it("refuses anything that would leave the site", () => {
+    for (const to of [
+      "https://evil.example",
+      "//evil.example",
+      "/\\evil.example",
+      "/\\/evil.example",
+      "admin",
+    ]) {
+      expect(safeRedirect(to, "/admin")).toBe("/admin");
+    }
+  });
+});
+
+describe("getDomainUrl", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("uses the configured origin and ignores forwarded hosts", () => {
+    vi.stubEnv("BETTER_AUTH_URL", "https://mokupona.ch");
+    const request = new Request("https://mokupona.ch/admin/users", {
+      headers: { "X-Forwarded-Host": "evil.example", Host: "evil.example" },
+    });
+
+    expect(getDomainUrl(request)).toBe("https://mokupona.ch");
   });
 });

@@ -8,13 +8,14 @@ import type { Route } from "./+types/forgot-password";
 
 import { AuthShell } from "~/components/auth-layout";
 import { AuthStatus } from "~/components/auth-status";
-import { Field } from "~/components/forms";
+import { ErrorList, Field } from "~/components/forms";
 import { Button, buttonVariants } from "~/components/ui/button";
 import { auth } from "~/features/auth/auth.server";
 import { emailSchema, parseRequestForm } from "~/features/auth/form-schemas";
 import { requestLoggerContext } from "~/features/auth/middleware.server";
 import { cn } from "~/lib/utils";
 import { getClientIPAddress } from "~/shared/http.server";
+import { rateLimitKey, rateLimiters } from "~/shared/rate-limit.server";
 
 const schema = z.object({
   email: emailSchema,
@@ -29,19 +30,35 @@ export const action = async ({ request, context }: Route.ActionArgs) => {
   }
 
   const { email } = submission.value;
+  const ip = getClientIPAddress(request);
 
-  await auth.api.requestPasswordReset({
-    body: { email, redirectTo: "/reset-password" },
-    headers: request.headers,
-  });
+  if (!rateLimiters.passwordMailByIp.hit(rateLimitKey(ip)).allowed) {
+    logger.warn({ ip, email }, "Password reset requests throttled");
+    return data(
+      {
+        result: submission.reply({
+          formErrors: ["Too many requests. Wait a few minutes and try again."],
+        }),
+        sentTo: null,
+      },
+      { status: 429 },
+    );
+  }
 
-  logger.info(
-    {
-      ip: getClientIPAddress(request),
-      email,
-    },
-    "Password reset requested",
-  );
+  // Past the per-address budget the page still says the mail went out, so
+  // it never tells anyone whether an account exists for that address.
+  if (rateLimiters.passwordMailByEmail.hit(email.toLowerCase()).allowed) {
+    await auth.api.requestPasswordReset({
+      body: { email, redirectTo: "/reset-password" },
+      headers: request.headers,
+    });
+    logger.info({ ip, email }, "Password reset requested");
+  } else {
+    logger.warn(
+      { ip, email },
+      "Password reset mail skipped: address throttled",
+    );
+  }
 
   return data({ result: submission.reply(), sentTo: email });
 };
@@ -113,6 +130,8 @@ export default function ForgotPassword({ actionData }: Route.ComponentProps) {
           }}
           errors={fields.email.errors}
         />
+
+        <ErrorList id={form.errorId} errors={form.errors} />
 
         <Button type="submit" size="lg" className="w-full">
           send reset link

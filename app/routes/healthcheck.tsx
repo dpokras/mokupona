@@ -3,16 +3,17 @@ import type { Route } from "./+types/healthcheck";
 import { requestLoggerContext } from "~/features/auth/middleware.server";
 import { pingDatabase } from "~/models/health.server";
 
-export const loader = async ({ request, context }: Route.LoaderArgs) => {
+// Always this process itself: a host taken from the request would let anyone
+// point the check's outbound request at another server.
+const SELF_URL = `http://127.0.0.1:${process.env.PORT ?? 3000}/`;
+
+export const loader = async ({ context }: Route.LoaderArgs) => {
   const logger = context.get(requestLoggerContext);
-  const host =
-    request.headers.get("X-Forwarded-Host") ?? request.headers.get("host");
 
   try {
-    const url = new URL("/", `http://${host}`);
     await Promise.all([
       pingDatabase(),
-      fetch(url.toString(), { method: "HEAD" }).then((r) => {
+      fetch(SELF_URL, { method: "HEAD" }).then((r) => {
         if (!r.ok) return Promise.reject(r);
       }),
     ]);

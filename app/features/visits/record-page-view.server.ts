@@ -12,6 +12,7 @@ import {
   getOrCreateVisitSalt,
 } from "~/models/page-view.server";
 import { getClientIPAddress } from "~/shared/http.server";
+import { rateLimitKey, rateLimiters } from "~/shared/rate-limit.server";
 
 const MAX_BODY_LENGTH = 2048;
 
@@ -99,6 +100,9 @@ export async function recordPageView({
   const userAgent = request.headers.get("User-Agent");
   if (!userAgent || isbot(userAgent)) return;
 
+  const ip = getClientIPAddress(request);
+  if (!rateLimiters.pageViewByIp.hit(rateLimitKey(ip)).allowed) return;
+
   const payload = await readPayload(request);
   if (!payload) return;
 
@@ -115,7 +119,7 @@ export async function recordPageView({
     day,
     path,
     referrer: referrerHost(payload.referrer, ownHost),
-    visitorId: visitorIdFor(salt, getClientIPAddress(request) ?? "", userAgent),
+    visitorId: visitorIdFor(salt, ip ?? "", userAgent),
     device: deviceFromUserAgent(userAgent),
   });
 }

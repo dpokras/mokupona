@@ -6,7 +6,7 @@ import {
 } from "@conform-to/react";
 import { getZodConstraint, parseWithZod } from "@conform-to/zod/v4";
 import { useMemo } from "react";
-import { Form } from "react-router";
+import { data, Form } from "react-router";
 
 import type { Route } from "./+types/dinners_.$dinnerId";
 
@@ -42,6 +42,7 @@ import {
 import { getClientIPAddress, requireFound } from "~/shared/http.server";
 import { getImageUrl } from "~/shared/image";
 import { withOpenGraphUrls } from "~/shared/meta";
+import { rateLimitKey, rateLimiters } from "~/shared/rate-limit.server";
 import { getImageConfig } from "~/shared/root-data";
 import { redirectWithToast } from "~/utils/toast.server";
 
@@ -65,6 +66,9 @@ export async function loader({ params }: Route.LoaderArgs) {
     gallery,
   };
 }
+
+const SIGNUP_THROTTLED_ERROR =
+  "Too many signups from your connection. Wait a few minutes and try again.";
 
 const FORM_CHANGED_ERROR =
   "The signup form was updated while you were filling it out. Please review your answers and submit again.";
@@ -129,6 +133,14 @@ export async function action({ params, request, context }: Route.ActionArgs) {
     );
 
     return submission.reply({ formErrors: [HONEYPOT_RETRY_MESSAGE] });
+  }
+
+  const ip = getClientIPAddress(request);
+  if (!rateLimiters.dinnerSignupByIp.hit(rateLimitKey(ip)).allowed) {
+    logger.warn({ ip, dinner: dinner.id }, "Dinner signups throttled");
+    return data(submission.reply({ formErrors: [SIGNUP_THROTTLED_ERROR] }), {
+      status: 429,
+    });
   }
 
   if (formData.get("formVersionId") !== version.id) {

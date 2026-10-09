@@ -24,14 +24,28 @@ export function safeRedirect(
     return defaultRedirect;
   }
 
+  // Browsers read "/\evil.example" as "//evil.example", another site, so
+  // only accept paths that stay on this origin once resolved.
+  const base = "http://same-origin.invalid";
+  try {
+    if (new URL(to, base).origin !== base) return defaultRedirect;
+  } catch {
+    return defaultRedirect;
+  }
+
   return to;
 }
 
+/**
+ * The site's own origin for links in emails and canonical URLs. Deployed apps
+ * always set BETTER_AUTH_URL, so request headers (which a client can forge)
+ * only decide it in local development.
+ */
 export function getDomainUrl(request: Request) {
-  const host =
-    request.headers.get("X-Forwarded-Host") ??
-    request.headers.get("host") ??
-    new URL(request.url).host;
+  const configured = process.env.BETTER_AUTH_URL;
+  if (configured) return new URL(configured).origin;
+
+  const host = request.headers.get("host") ?? new URL(request.url).host;
   const protocol = host.includes("localhost") ? "http" : "https";
   return `${protocol}://${host}`;
 }

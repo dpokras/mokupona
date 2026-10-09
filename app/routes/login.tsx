@@ -24,6 +24,7 @@ import {
   requestLoggerContext,
 } from "~/features/auth/middleware.server";
 import { getClientIPAddress, safeRedirect } from "~/shared/http.server";
+import { rateLimitKey, rateLimiters } from "~/shared/rate-limit.server";
 
 const schema = z.object({
   email: emailSchema,
@@ -44,6 +45,23 @@ export const action = async ({ request, context }: Route.ActionArgs) => {
 
   const { email, password, remember } = submission.value;
   const redirectTo = safeRedirect(submission.value.redirectTo, "/admin");
+  const ip = getClientIPAddress(request);
+  const emailKey = email.toLowerCase();
+
+  const throttled = [
+    rateLimiters.loginByIp.hit(rateLimitKey(ip)),
+    rateLimiters.loginByEmail.hit(emailKey),
+  ].find((attempt) => !attempt.allowed);
+  if (throttled) {
+    logger.warn({ ip, email }, "Login attempts throttled");
+    return data(
+      { result: submission.reply(), authError: { kind: "throttled" as const } },
+      {
+        status: 429,
+        headers: { "Retry-After": String(throttled.retryAfterSeconds) },
+      },
+    );
+  }
 
   try {
     const { headers } = await auth.api.signInEmail({
@@ -56,6 +74,7 @@ export const action = async ({ request, context }: Route.ActionArgs) => {
       headers: request.headers,
       returnHeaders: true,
     });
+    rateLimiters.loginByEmail.reset(emailKey);
 
     logger.info(
       {
@@ -114,6 +133,7 @@ export default function LoginPage({
     },
   });
   const credentialsRejected = authError?.kind === "credentials";
+  const throttled = authError?.kind === "throttled";
   // set by the OAuth callback when it turned a google sign-in away
   const googleRefused = searchParams.get("error") === GOOGLE_DISABLED_ERROR;
   const notInvited = searchParams.get("error") === NOT_INVITED_ERROR;
@@ -141,6 +161,11 @@ export default function LoginPage({
             title="google sign-in is turned off"
           >
             {GOOGLE_DISABLED_MESSAGE}
+          </AuthNotice>
+        ) : null}
+        {throttled ? (
+          <AuthNotice variant="destructive" title="too many attempts">
+            wait a few minutes before trying again.
           </AuthNotice>
         ) : null}
         {notInvited ? (

@@ -38,6 +38,9 @@ export const auth = singleton("better-auth", () => {
     secret: process.env.BETTER_AUTH_SECRET,
     database: prismaAdapter(prisma, { provider: "sqlite" }),
     onAPIError: { errorURL: "/login" },
+    // Fly sets Fly-Client-IP to the real peer; X-Forwarded-For (the default)
+    // can carry addresses the client made up, which would skew rate limits.
+    advanced: { ipAddress: { ipAddressHeaders: ["fly-client-ip"] } },
     user: {
       additionalFields: {
         roleId: { type: "string", required: false, input: false },
