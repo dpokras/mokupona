@@ -6,6 +6,8 @@ import { fileURLToPath } from "node:url";
 
 import { faker } from "@faker-js/faker";
 
+import { seedFaq } from "./seed-faq";
+
 import { prisma } from "~/db.server";
 import { createUserViaAuth } from "~/features/auth/create-user.server";
 import { ROLE_NAMES } from "~/features/auth/roles";
@@ -252,6 +254,8 @@ async function seed() {
       },
     });
   }
+
+  await seedFaq();
 
   console.log(`Database has been seeded. 🌱`);
 }
