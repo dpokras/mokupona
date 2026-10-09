@@ -27,4 +27,4 @@ export const EMAIL_SIGNUP_CLOSED_MESSAGE =
 
 /** Google's variant, where the email form is the way back in. */
 export const GOOGLE_DISABLED_MESSAGE =
-  "google sign-in is switched off right now. use your email address and password instead — if you only ever signed in with google, use forgot password to set one.";
+  "google sign-in is switched off right now. use your email address and password instead. if you only ever signed in with google, use forgot password to set one.";

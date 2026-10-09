@@ -74,7 +74,7 @@ through models (`getRoleByName`, `setUserEmailVerified`).
 
 ## Current model modules
 
-`address`, `board-member`, `event`, `event-response`, `form`,
+`address`, `board-member`, `event`, `event-response`, `faq`, `form`, `gallery`,
 `form-submission`, `health` (DB ping for the healthcheck route), `image`,
-`invite`, `password-reset`, `role`, `user` — all as `*.server.ts` under
-`app/models/`.
+`invite`, `page-view`, `password-reset`, `role`, `site-image`, `site-text`,
+`user` — all as `*.server.ts` under `app/models/`.

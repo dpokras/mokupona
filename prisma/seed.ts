@@ -193,7 +193,7 @@ async function seed() {
           width,
           height,
           blurDataUrl: galleryBlurDataUrl(width, height, hue),
-          altText: `${pastEvent.title} — photo ${index + 1}`,
+          altText: `${pastEvent.title}, photo ${index + 1}`,
           caption: index % 2 === 0 ? `${caption} ${index + 1}` : null,
         };
       }),
