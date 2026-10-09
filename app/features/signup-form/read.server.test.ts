@@ -3,7 +3,11 @@ import { describe, expect, it } from "vitest";
 import { buildEventData } from "../../../test/factories";
 
 import { DEFAULT_FORM } from "./default-form";
-import { getAttendeeRosterForEvent, getAttendeesForEvent } from "./read.server";
+import {
+  getAttendeeRosterForEvent,
+  getAttendeesForAllEvents,
+  getAttendeesForEvent,
+} from "./read.server";
 
 import { prisma } from "~/db.server";
 import type { FieldDescriptor } from "~/features/forms/fields";
@@ -145,6 +149,46 @@ describe("getAttendeesForEvent", () => {
 
     expect(attendees).toHaveLength(4);
     expect(attendees.at(-1)?.name).toBe("Later Legacy");
+  });
+});
+
+describe("getAttendeesForAllEvents", () => {
+  it("flattens every dinner's signups and tags each attendee with its dinner", async () => {
+    const withSubmission = await createEventWithSubmission();
+    const withLegacyRow = await createEvent(await buildEventData());
+    await prisma.eventResponse.create({
+      data: {
+        eventId: withLegacyRow.id,
+        name: "Legacy Person",
+        email: "legacy@example.com",
+      },
+    });
+
+    const attendees = await getAttendeesForAllEvents();
+
+    const fromSubmission = attendees.filter(
+      (attendee) => attendee.dinner.id === withSubmission.id,
+    );
+    expect(fromSubmission.map((a) => [a.name, a.isSigner])).toEqual([
+      ["Ada Signer", true],
+      ["Grace Friend", false],
+      ["Alan Friend", false],
+    ]);
+    expect(fromSubmission[0].dinner).toEqual({
+      id: withSubmission.id,
+      title: withSubmission.title,
+      date: withSubmission.date,
+    });
+
+    const fromLegacy = attendees.filter(
+      (attendee) => attendee.dinner.id === withLegacyRow.id,
+    );
+    expect(fromLegacy).toHaveLength(1);
+    expect(fromLegacy[0]).toMatchObject({
+      isSigner: null,
+      name: "Legacy Person",
+      dinner: { title: withLegacyRow.title },
+    });
   });
 });
 

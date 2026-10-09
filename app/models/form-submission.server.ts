@@ -1,4 +1,9 @@
-import type { Prisma } from "#prisma/generated/client";
+import type {
+  Event,
+  FormSubmission,
+  FormVersion,
+  Prisma,
+} from "#prisma/generated/client";
 
 import { prisma } from "~/db.server";
 
@@ -60,4 +65,32 @@ export async function getFormSubmissionsForEvent(eventId: string) {
     include: { formVersion: true },
     orderBy: { createdAt: "asc" },
   });
+}
+
+export async function getAllFormSubmissionsWithEvent(): Promise<
+  (FormSubmission & {
+    formVersion: FormVersion;
+    event: Pick<Event, "id" | "title" | "date">;
+  })[]
+> {
+  const submissions = await prisma.formSubmission.findMany({
+    where: { formVersion: { form: { event: { isNot: null } } } },
+    include: {
+      formVersion: {
+        include: {
+          form: {
+            select: {
+              event: { select: { id: true, title: true, date: true } },
+            },
+          },
+        },
+      },
+    },
+    orderBy: { createdAt: "asc" },
+  });
+
+  return submissions.flatMap(
+    ({ formVersion: { form, ...formVersion }, ...submission }) =>
+      form.event ? [{ ...submission, formVersion, event: form.event }] : [],
+  );
 }

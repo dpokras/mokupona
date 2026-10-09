@@ -5,10 +5,12 @@ import { parseStoredFormSchemaOrLog } from "~/features/forms/serialization.serve
 import { requestLogger } from "~/logger/request-context.server";
 import {
   countEventResponsesByEvent,
+  getAllEventResponsesWithEvent,
   getEventResponsesForEvent,
   type EventResponse,
 } from "~/models/event-response.server";
 import {
+  getAllFormSubmissionsWithEvent,
   getFormSubmissionAnswersByEvent,
   getFormSubmissionsForEvent,
 } from "~/models/form-submission.server";
@@ -63,6 +65,47 @@ export async function getAttendeesForEvent(
 ): Promise<Attendee[]> {
   const { attendees } = await loadRoster(eventId);
   return attendees;
+}
+
+export interface DinnerAttendee extends Attendee {
+  dinner: { id: string; title: string; date: Date };
+}
+
+export async function getAttendeesForAllEvents(): Promise<DinnerAttendee[]> {
+  const [legacyRows, submissions] = await Promise.all([
+    getAllEventResponsesWithEvent(),
+    getAllFormSubmissionsWithEvent(),
+  ]);
+
+  const byEvent = new Map<
+    string,
+    {
+      dinner: DinnerAttendee["dinner"];
+      legacyRows: EventResponse[];
+      submissions: StoredSubmission[];
+    }
+  >();
+  const groupFor = (dinner: DinnerAttendee["dinner"]) => {
+    let group = byEvent.get(dinner.id);
+    if (!group) {
+      group = { dinner, legacyRows: [], submissions: [] };
+      byEvent.set(dinner.id, group);
+    }
+    return group;
+  };
+
+  for (const { event, ...row } of legacyRows) {
+    groupFor(event).legacyRows.push(row);
+  }
+  for (const { event, ...submission } of submissions) {
+    groupFor(event).submissions.push(submission);
+  }
+
+  return [...byEvent.values()].flatMap(({ dinner, legacyRows, submissions }) =>
+    buildRoster(dinner.id, legacyRows, submissions).attendees.map(
+      (attendee) => ({ ...attendee, dinner }),
+    ),
+  );
 }
 
 export async function getAttendeeCountsForEvents(
@@ -199,6 +242,17 @@ async function loadRoster(eventId: string): Promise<{
     getFormSubmissionsForEvent(eventId),
   ]);
 
+  return {
+    ...buildRoster(eventId, legacyRows, submissions),
+    hasLegacyRows: legacyRows.length > 0,
+  };
+}
+
+function buildRoster(
+  eventId: string,
+  legacyRows: EventResponse[],
+  submissions: StoredSubmission[],
+): { attendees: Attendee[]; schemas: StoredFormSchema[] } {
   const versions = [
     ...new Map(
       submissions.map(({ formVersion }) => [formVersion.id, formVersion]),
@@ -232,7 +286,6 @@ async function loadRoster(eventId: string): Promise<{
     schemas: versions
       .map((version) => descriptorsByVersion.get(version.id))
       .filter((descriptors) => descriptors !== undefined),
-    hasLegacyRows: legacyRows.length > 0,
   };
 }
 

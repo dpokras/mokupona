@@ -62,6 +62,10 @@ export function formatAdminDateLine(date: Date) {
   return `${dayLine} · ${eventTimeFormat.format(date)}`;
 }
 
+export function formatAdminDate(date: Date) {
+  return adminDateFormat.format(date);
+}
+
 export function formatAdminTimestamp(date: Date) {
   const dayMonth = adminTimestampDayFormat.format(date);
 
