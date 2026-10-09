@@ -24,6 +24,8 @@ import {
   resolveOptionalUserMiddleware,
 } from "~/features/auth/middleware.server";
 import { getHoneypotInputProps } from "~/features/forms/honeypot.server";
+import { useNonce } from "~/shared/nonce";
+import { applySecurityHeaders } from "~/shared/security-headers.server";
 import { loadSiteImages } from "~/features/site-content/site-images.server";
 import { MatchedSiteTextProvider } from "~/features/site-content/site-text";
 import { loadRootSiteTexts } from "~/features/site-content/site-texts.server";
@@ -48,7 +50,14 @@ export const links: LinksFunction = () => [
   { rel: "manifest", href: "/site.webmanifest" },
 ];
 
+const securityHeadersMiddleware: Route.MiddlewareFunction = async (_, next) => {
+  const response = await next();
+  applySecurityHeaders(response.headers);
+  return response;
+};
+
 export const middleware: Route.MiddlewareFunction[] = [
+  securityHeadersMiddleware,
   requestLoggerMiddleware,
   resolveOptionalUserMiddleware,
 ];
@@ -84,12 +93,13 @@ export const loader = async ({ request, context }: Route.LoaderArgs) => {
 
 export default function App({ loaderData }: Route.ComponentProps) {
   const { allowIndexing, cypressSupport } = loaderData;
+  const nonce = useNonce();
 
   return (
     <html lang="en" className="h-full scroll-smooth">
       <head>
         {cypressSupport ? (
-          <script data-cy-bootstrap suppressHydrationWarning>
+          <script data-cy-bootstrap nonce={nonce} suppressHydrationWarning>
             {"/* placeholder */"}
           </script>
         ) : null}
@@ -106,8 +116,8 @@ export default function App({ loaderData }: Route.ComponentProps) {
           toast={loaderData.toast}
           nextDinnerId={loaderData.nextDinnerId}
         />
-        <ScrollRestoration />
-        <Scripts />
+        <ScrollRestoration nonce={nonce} />
+        <Scripts nonce={nonce} />
         <Toaster />
       </body>
     </html>

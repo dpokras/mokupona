@@ -15,6 +15,11 @@ import { isRouteErrorResponse, ServerRouter } from "react-router";
 import { requestLoggerContext } from "~/features/auth/middleware.server";
 import { describeCompletedRequest } from "~/logger/request-log.server";
 import { logger } from "~/logger.server";
+import { NonceProvider } from "~/shared/nonce";
+import {
+  contentSecurityPolicy,
+  createNonce,
+} from "~/shared/security-headers.server";
 
 export const streamTimeout = 5000;
 
@@ -94,6 +99,9 @@ function streamDocument(
   log: Logger,
 ) {
   const path = new URL(request.url).pathname;
+  const nonce = createNonce();
+  const csp = contentSecurityPolicy(nonce);
+  if (csp) responseHeaders.set("Content-Security-Policy", csp);
 
   return new Promise((resolve, reject) => {
     let timeout: NodeJS.Timeout | undefined;
@@ -119,8 +127,15 @@ function streamDocument(
     };
 
     const { abort, pipe } = renderToPipeableStream(
-      <ServerRouter context={reactRouterContext} url={request.url} />,
+      <NonceProvider value={nonce}>
+        <ServerRouter
+          context={reactRouterContext}
+          url={request.url}
+          nonce={nonce}
+        />
+      </NonceProvider>,
       {
+        nonce,
         onShellReady() {
           if (readyEvent === "onShellReady") sendShell(pipe);
         },
