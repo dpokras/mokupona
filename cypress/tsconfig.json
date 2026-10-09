@@ -11,13 +11,13 @@
   ],
   "compilerOptions": {
     "noEmit": true,
-    "types": ["node", "cypress", "@testing-library/cypress"],
+    "types": ["node", "vite/client", "cypress", "@testing-library/cypress"],
     // https://github.com/cypress-io/cypress/issues/33385
     "ignoreDeprecations": "6.0",
     "esModuleInterop": true,
     "jsx": "react-jsx",
     "moduleResolution": "Bundler",
-    "target": "ES2020",
+    "target": "ES2022",
     "strict": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
