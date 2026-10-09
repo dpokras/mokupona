@@ -7,7 +7,8 @@ import { logger } from "~/logger.server";
 import { singleton } from "~/utils/singleton.server";
 
 /** The asset folders this app writes to, per owner entity. */
-export type ImageFolder = "dinners" | "board-members" | "dinner-gallery";
+export type ImageFolder =
+  "dinners" | "board-members" | "dinner-gallery" | "site-images";
 
 function imageProviderName(env: NodeJS.ProcessEnv) {
   return env.IMAGE_PROVIDER ?? "local";

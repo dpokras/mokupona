@@ -14,13 +14,13 @@ import {
   partitionEvents,
 } from "~/features/events/event-status";
 import { toEventCardModel } from "~/features/events/view-models";
+import { IMAGE_SLOTS } from "~/features/site-content/image-slots";
 import { metaText, useText } from "~/features/site-content/site-text";
 import { getEventsWithAddress } from "~/models/event.server";
 import { getImageUrl } from "~/shared/image";
 import { withOpenGraphUrls } from "~/shared/meta";
-import { getImageConfig } from "~/shared/root-data";
+import { getImageConfig, getSiteImage } from "~/shared/root-data";
 
-const HERO_IMAGE_ID = "static/hero-image";
 const OG_IMAGE_WIDTH = 1200;
 const OG_IMAGE_HEIGHT = 630;
 
@@ -49,7 +49,7 @@ export const meta: Route.MetaFunction = ({ matches, location }) => {
   ];
 
   const ogImageUrl = getImageUrl(
-    { storageKey: HERO_IMAGE_ID },
+    getSiteImage(matches, "shareImage") ?? IMAGE_SLOTS.shareImage.fallback,
     getImageConfig(matches),
     { width: OG_IMAGE_WIDTH, height: OG_IMAGE_HEIGHT },
   );

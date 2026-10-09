@@ -4,6 +4,8 @@ import invariant from "tiny-invariant";
 import type { Route as RootRoute } from "../+types/root";
 
 import type { HoneypotInputProps } from "~/features/forms/honeypot";
+import type { ImageSlotKey } from "~/features/site-content/image-slots";
+import type { ImageMetadata } from "~/models/image.server";
 import type { ImageProviderConfig } from "~/shared/image";
 
 type RootLoaderData = RootRoute.ComponentProps["loaderData"];
@@ -32,6 +34,14 @@ export function useImageConfig(): ImageProviderConfig {
   return toImageConfig(
     useRouteLoaderData("root") as RootLoaderData | undefined,
   );
+}
+
+/** The image uploaded into a site image slot, without the slot's fallback. */
+export function getSiteImage(
+  matches: readonly ({ id: string; loaderData: unknown } | undefined)[],
+  key: ImageSlotKey,
+): ImageMetadata | null {
+  return getRootLoaderData(matches)?.siteImages[key] ?? null;
 }
 
 /**

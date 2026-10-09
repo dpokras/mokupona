@@ -12,9 +12,11 @@ import {
   TextSectionBlockView,
   type TextSectionBlockType,
 } from "~/features/cms/blocks/text-section";
+import { IMAGE_SLOTS } from "~/features/site-content/image-slots";
 import { metaText, useText } from "~/features/site-content/site-text";
 import { listBoardMembers } from "~/models/board-member.server";
 import type { ImageMetadata } from "~/models/image.server";
+import { getSiteImage } from "~/shared/root-data";
 
 /** Square portraits keep the grid honest whatever aspect the upload had. */
 const PORTRAIT_SIZE = 320;
@@ -31,7 +33,10 @@ export const meta: Route.MetaFunction = ({ matches }) => [
   },
 ];
 
-export default function AboutPage({ loaderData }: Route.ComponentProps) {
+export default function AboutPage({
+  loaderData,
+  matches,
+}: Route.ComponentProps) {
   const { volunteers } = loaderData;
   const t = useText();
 
@@ -63,6 +68,8 @@ export default function AboutPage({ loaderData }: Route.ComponentProps) {
         </div>
       </PageContainer>
 
+      <AboutPhoto image={getSiteImage(matches, "aboutPhoto")} />
+
       <TextSectionBlockView blockData={whoWeAreSectionData} />
 
       <PageContainer as="div">
@@ -83,6 +90,26 @@ export default function AboutPage({ loaderData }: Route.ComponentProps) {
         )}
       </PageContainer>
     </main>
+  );
+}
+
+function AboutPhoto({ image }: { image: ImageMetadata | null }) {
+  const t = useText();
+  if (!image) return null;
+
+  const { width, height } = IMAGE_SLOTS.aboutPhoto;
+
+  return (
+    <PageContainer as="div" className="mt-12 md:mt-16">
+      <OptimizedImage
+        image={image}
+        alt={t("about.photoAlt")}
+        width={width}
+        height={height}
+        sizes="(min-width: 1024px) 944px, 100vw"
+        className="w-full"
+      />
+    </PageContainer>
   );
 }
 

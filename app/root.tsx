@@ -24,6 +24,7 @@ import {
   resolveOptionalUserMiddleware,
 } from "~/features/auth/middleware.server";
 import { getHoneypotInputProps } from "~/features/forms/honeypot.server";
+import { loadSiteImages } from "~/features/site-content/site-images.server";
 import { MatchedSiteTextProvider } from "~/features/site-content/site-text";
 import { loadRootSiteTexts } from "~/features/site-content/site-texts.server";
 import { PageViewBeacon } from "~/features/visits/page-view-beacon";
@@ -57,6 +58,7 @@ export const loader = async ({ request, context }: Route.LoaderArgs) => {
   const user = await context.get(optionalUserContext)();
   const nextEvent = await getNextEvent();
   const siteTexts = await loadRootSiteTexts();
+  const siteImages = await loadSiteImages();
   const { toast, headers } = await getToast(request);
   const allowIndexing = process.env.ALLOW_INDEXING !== "false";
   const cypressSupport = process.env.CYPRESS_SUPPORT === "true";
@@ -74,6 +76,7 @@ export const loader = async ({ request, context }: Route.LoaderArgs) => {
       cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME ?? null,
       honeypot: getHoneypotInputProps(),
       siteTexts,
+      siteImages,
     },
     { headers: headers ?? undefined },
   );

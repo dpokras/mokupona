@@ -42,6 +42,13 @@ export const aboutTexts = defineTextCategory({
         "moku pona runs on volunteers: the ones who cook, host, wash up, and somehow still have room for dessert.",
     },
 
+    photoAlt: {
+      group: "Top of the page",
+      label: "Photo description (screen readers)",
+      help: "Describes the about page photo for people who can't see it. The photo itself is set under Site content, Images.",
+      kind: "line",
+      default: "a moku pona dinner",
+    },
     whoWeAreEyebrow: {
       group: "Who we are",
       label: "Small line above the heading",
