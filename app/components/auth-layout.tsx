@@ -1,12 +1,6 @@
 import type { ReactNode } from "react";
-import { Link } from "react-router";
 
-import {
-  Eyebrow,
-  Glow,
-  segmentGroupClassName,
-  segmentVariants,
-} from "./section";
+import { Eyebrow, Glow } from "./section";
 
 interface AuthShellBrandCopy {
   eyebrow: string;
@@ -15,24 +9,17 @@ interface AuthShellBrandCopy {
 }
 
 const DEFAULT_BRAND: AuthShellBrandCopy = {
-  eyebrow: "members",
+  eyebrow: "team",
   heading: "welcome back to the table",
-  body: "sign in to manage your reservations, or create an account to start joining our dinners.",
+  body: "this is where the people who run moku pona sign in. new team members get in with an invitation.",
 };
 
 interface AuthShellProps {
-  mode?: "login" | "join";
-  search?: string;
   brand?: AuthShellBrandCopy;
   children: ReactNode;
 }
 
-export function AuthShell({
-  mode,
-  search,
-  brand = DEFAULT_BRAND,
-  children,
-}: AuthShellProps) {
+export function AuthShell({ brand = DEFAULT_BRAND, children }: AuthShellProps) {
   return (
     <div className="flex grow flex-col md:flex-row">
       <div className="relative hidden flex-col justify-center overflow-hidden border-r p-12 md:flex md:w-1/2">
@@ -66,31 +53,9 @@ export function AuthShell({
 
       <div className="flex flex-col px-6 py-6 md:w-1/2 md:justify-center md:px-20 md:py-16">
         <div className="mx-auto flex w-full max-w-md flex-col gap-4 md:gap-5">
-          {mode ? <ModeToggle mode={mode} search={search} /> : null}
           {children}
         </div>
       </div>
-    </div>
-  );
-}
-
-function ModeToggle({ mode, search }: Pick<AuthShellProps, "mode" | "search">) {
-  return (
-    <div className={segmentGroupClassName}>
-      <Link
-        to={{ pathname: "/login", search }}
-        className={segmentVariants({ active: mode === "login" })}
-        aria-current={mode === "login" ? "page" : undefined}
-      >
-        log in
-      </Link>
-      <Link
-        to={{ pathname: "/join", search }}
-        className={segmentVariants({ active: mode === "join" })}
-        aria-current={mode === "join" ? "page" : undefined}
-      >
-        sign up
-      </Link>
     </div>
   );
 }

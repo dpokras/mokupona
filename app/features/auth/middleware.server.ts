@@ -65,7 +65,6 @@ export async function anonymousAuthPageLoader({
   if (user) throw redirect("/admin");
   return {
     googleEnabled: googleAuthEnabled && isAuthToggleEnabled("google"),
-    emailSignupEnabled: isAuthToggleEnabled("emailSignup"),
   };
 }
 

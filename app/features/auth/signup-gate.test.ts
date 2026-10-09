@@ -3,12 +3,11 @@
 import { RouterContextProvider } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import {
-  resetAuthSettings,
-  setAuthToggleEnabled,
-} from "./auth-settings.server";
+import { resetAuthSettings } from "./auth-settings.server";
 
 import { action } from "~/routes/api.auth.$";
+import { loader as checkInboxLoader } from "~/routes/check-your-inbox";
+import { loader as joinLoader } from "~/routes/join";
 
 const mocks = vi.hoisted(() => ({ handler: vi.fn() }));
 
@@ -33,13 +32,7 @@ function post(path: string) {
 }
 
 describe("better-auth endpoint gate", () => {
-  it("forwards registration while email signup is open", async () => {
-    await expect(post("/api/auth/sign-up/email")).resolves.toBe(DELEGATED);
-  });
-
-  it("refuses registration with a 403 once email signup is closed", async () => {
-    setAuthToggleEnabled("emailSignup", false);
-
+  it("refuses self sign-up with a 403, since accounts are invite-only", async () => {
     const response = await post("/api/auth/sign-up/email");
 
     expect(response.status).toBe(403);
@@ -49,15 +42,23 @@ describe("better-auth endpoint gate", () => {
     expect(mocks.handler).not.toHaveBeenCalled();
   });
 
-  it("leaves every other endpoint alone while email signup is closed", async () => {
-    setAuthToggleEnabled("emailSignup", false);
-
+  it("leaves every other endpoint alone", async () => {
     for (const path of [
       "/api/auth/sign-in/email",
       "/api/auth/sign-in/social",
       "/api/auth/forget-password",
     ]) {
       await expect(post(path)).resolves.toBe(DELEGATED);
+    }
+  });
+});
+
+describe("old sign-up pages", () => {
+  it("send people to the login page", () => {
+    for (const loader of [joinLoader, checkInboxLoader]) {
+      const response = loader();
+      expect(response.status).toBe(302);
+      expect(response.headers.get("Location")).toBe("/login");
     }
   });
 });

@@ -14,6 +14,7 @@ import { Label } from "~/components/ui/label";
 import {
   GOOGLE_DISABLED_ERROR,
   GOOGLE_DISABLED_MESSAGE,
+  NOT_INVITED_ERROR,
 } from "~/features/auth/auth-settings";
 import { auth } from "~/features/auth/auth.server";
 import { GoogleSignInButton } from "~/features/auth/components/google-button";
@@ -115,9 +116,10 @@ export default function LoginPage({
   const credentialsRejected = authError?.kind === "credentials";
   // set by the OAuth callback when it turned a google sign-in away
   const googleRefused = searchParams.get("error") === GOOGLE_DISABLED_ERROR;
+  const notInvited = searchParams.get("error") === NOT_INVITED_ERROR;
 
   return (
-    <AuthShell mode="login" search={searchParams.toString()}>
+    <AuthShell>
       <h1 className="mt-1 text-3xl leading-tight font-light tracking-tight">
         log in
       </h1>
@@ -139,6 +141,12 @@ export default function LoginPage({
             title="google sign-in is turned off"
           >
             {GOOGLE_DISABLED_MESSAGE}
+          </AuthNotice>
+        ) : null}
+        {notInvited ? (
+          <AuthNotice variant="destructive" title="no account for that email">
+            accounts are by invitation only. if you help run moku pona, ask an
+            admin to invite you, then use the link in the invitation email.
           </AuthNotice>
         ) : null}
         {authError?.kind === "unverified" ? (
@@ -211,19 +219,6 @@ export default function LoginPage({
           by continuing you accept the{" "}
           <Link to="/privacy" className="text-primary hover:underline">
             privacy policy
-          </Link>
-        </p>
-
-        <p className="text-muted-foreground text-center text-sm">
-          don&apos;t have an account?{" "}
-          <Link
-            to={{
-              pathname: "/join",
-              search: searchParams.toString(),
-            }}
-            className="text-primary font-semibold hover:underline"
-          >
-            sign up
           </Link>
         </p>
       </Form>

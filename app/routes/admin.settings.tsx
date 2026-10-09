@@ -68,7 +68,7 @@ export default function AdminSettingsPage({
       <AdminPageHeader
         eyebrow="settings"
         title="Access"
-        subtitle="Decide how people can sign up or sign in on their own. Invitations keep working either way."
+        subtitle="Accounts are by invitation only (see Users). Here you choose whether the team can also sign in with Google."
       />
 
       <Card className="p-4 md:p-5">

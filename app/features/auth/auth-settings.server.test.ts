@@ -12,26 +12,22 @@ afterEach(() => {
 });
 
 describe("auth settings store", () => {
-  it("leaves every toggle open until something closes one", () => {
-    expect(getAuthSettings()).toEqual({ emailSignup: true, google: true });
+  it("leaves google sign-in open until something closes it", () => {
+    expect(getAuthSettings()).toEqual({ google: true });
   });
 
-  it("closes toggles independently of each other", () => {
-    setAuthToggleEnabled("emailSignup", false);
-
-    expect(isAuthToggleEnabled("emailSignup")).toBe(false);
-    expect(isAuthToggleEnabled("google")).toBe(true);
-
+  it("closes and reopens google sign-in", () => {
     setAuthToggleEnabled("google", false);
-    setAuthToggleEnabled("emailSignup", true);
+    expect(isAuthToggleEnabled("google")).toBe(false);
 
-    expect(getAuthSettings()).toEqual({ emailSignup: true, google: false });
+    setAuthToggleEnabled("google", true);
+    expect(getAuthSettings()).toEqual({ google: true });
   });
 
   it("hands loaders a snapshot they cannot write back through", () => {
     const snapshot = getAuthSettings();
-    snapshot.emailSignup = false;
+    snapshot.google = false;
 
-    expect(isAuthToggleEnabled("emailSignup")).toBe(true);
+    expect(isAuthToggleEnabled("google")).toBe(true);
   });
 });

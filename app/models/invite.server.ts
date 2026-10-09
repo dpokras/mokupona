@@ -78,6 +78,18 @@ export async function listPendingInvites(): Promise<Invite[]> {
   });
 }
 
+export async function hasPendingInviteFor(email: string): Promise<boolean> {
+  const invite = await prisma.invite.findFirst({
+    where: {
+      email: email.toLowerCase(),
+      acceptedAt: null,
+      expiresAt: { gt: new Date() },
+    },
+    select: { id: true },
+  });
+  return invite !== null;
+}
+
 export async function getInviteByToken(
   token: string,
 ): Promise<(Invite & { createdBy: { name: string } }) | null> {

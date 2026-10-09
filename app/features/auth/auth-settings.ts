@@ -1,29 +1,22 @@
-export const AUTH_TOGGLES = ["emailSignup", "google"] as const;
+export const AUTH_TOGGLES = ["google"] as const;
 export type AuthToggle = (typeof AUTH_TOGGLES)[number];
 
 /** Which self-service auth paths are currently open. */
 export type AuthSettings = Record<AuthToggle, boolean>;
 
 export const AUTH_TOGGLE_COPY = {
-  emailSignup: {
-    label: "email sign-ups",
-    description: "lets anyone create an account from the sign-up form.",
-  },
   google: {
     label: "google sign-in",
     description:
-      "lets anyone sign in, sign up, or link an account with google. turning it off refuses all three.",
+      "lets the team sign in with google, and invited people accept their invitation with google. turning it off refuses both.",
   },
 } satisfies Record<AuthToggle, { label: string; description: string }>;
 
+/** The error the OAuth callback redirects with for a stranger's google account. */
+export const NOT_INVITED_ERROR = "not_invited";
+
 /** The error code the OAuth callback redirects with once Google is off. */
 export const GOOGLE_DISABLED_ERROR = "google_disabled";
-
-export const SIGNUP_CLOSED_MESSAGE =
-  "sign-ups are closed right now. if you were invited, use the link in your invitation email.";
-
-export const EMAIL_SIGNUP_CLOSED_MESSAGE =
-  "email sign-ups are closed right now. you can still continue with google below.";
 
 /** Google's variant, where the email form is the way back in. */
 export const GOOGLE_DISABLED_MESSAGE =

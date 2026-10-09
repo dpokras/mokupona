@@ -1,6 +1,5 @@
 import type { Route } from "./+types/api.auth.$";
 
-import { isAuthToggleEnabled } from "~/features/auth/auth-settings.server";
 import { auth } from "~/features/auth/auth.server";
 import { requestLoggerContext } from "~/features/auth/middleware.server";
 import { getClientIPAddress } from "~/shared/http.server";
@@ -14,17 +13,14 @@ export const loader = async ({ request }: Route.LoaderArgs) =>
 export const action = async ({ request, context }: Route.ActionArgs) => {
   const { pathname } = new URL(request.url);
 
-  if (
-    pathname.endsWith(SIGN_UP_EMAIL_PATH) &&
-    !isAuthToggleEnabled("emailSignup")
-  ) {
+  if (pathname.endsWith(SIGN_UP_EMAIL_PATH)) {
     const logger = context.get(requestLoggerContext);
     logger.warn(
       { ip: getClientIPAddress(request) },
-      "Blocked email signup while self-signup is disabled",
+      "Blocked a self sign-up; accounts are invite-only",
     );
     return Response.json(
-      { code: "SIGNUP_DISABLED", message: "Sign-ups are currently disabled" },
+      { code: "SIGNUP_DISABLED", message: "Accounts are by invitation only" },
       { status: 403 },
     );
   }
