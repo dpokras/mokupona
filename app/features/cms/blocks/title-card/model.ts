@@ -20,8 +20,8 @@ type TitleCardBlockData = {
   };
   /** Optional line under the wordmark. Keep it very short — this is a title card. */
   tagline?: string;
-  /** Anchor the scroll cue points at, e.g. `#vision`. Hidden when unset. */
-  scrollTo?: string;
+  /** The cue at the bottom: its anchor, e.g. `#vision`, and its word. Hidden when unset. */
+  scrollCue?: { href: string; label: string };
 };
 
 export type TitleCardBlockType = BlockBaseType<

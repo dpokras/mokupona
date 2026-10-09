@@ -18,7 +18,7 @@ export function TextSectionBlockView({
   const { eyebrow, eyebrowHandwritten, headline, body, variant } = data;
 
   const eyebrowNode = eyebrowHandwritten ? (
-    <HandwrittenHeading name={eyebrowHandwritten} />
+    <HandwrittenHeading name={eyebrowHandwritten} alt={eyebrow ?? ""} />
   ) : eyebrow ? (
     <Eyebrow>{eyebrow}</Eyebrow>
   ) : null;
@@ -35,7 +35,7 @@ export function TextSectionBlockView({
           <h2 className="text-3xl leading-tight font-light tracking-tight text-balance md:text-4xl">
             {headline}
           </h2>
-          <p className="text-muted-foreground text-lg font-light md:text-xl">
+          <p className="text-muted-foreground text-lg font-light whitespace-pre-line md:text-xl">
             {body}
           </p>
         </section>
@@ -52,7 +52,7 @@ export function TextSectionBlockView({
             {headline}
           </h2>
         </div>
-        <p className="text-muted-foreground text-base font-light md:text-lg">
+        <p className="text-muted-foreground text-base font-light whitespace-pre-line md:text-lg">
           {body}
         </p>
       </section>

@@ -14,6 +14,7 @@ import {
   partitionEvents,
 } from "~/features/events/event-status";
 import { toEventCardModel } from "~/features/events/view-models";
+import { metaText, useText } from "~/features/site-content/site-text";
 import { getEventsWithAddress } from "~/models/event.server";
 import { getImageUrl } from "~/shared/image";
 import { withOpenGraphUrls } from "~/shared/meta";
@@ -32,37 +33,12 @@ export const loader = async () => {
   return { events: events.map(toEventCardModel) };
 };
 
-const titleCardData: TitleCardBlockType = {
-  type: "title-card",
-  version: 1,
-  data: {
-    title: "moku pona",
-    // hand-drawn wordmark; `title` above is its alt text
-    logo: { src: "/naive-title.svg", width: 1258, height: 368 },
-    tagline: "a dinner society in zürich",
-    scrollTo: "#vision",
-  },
-};
-
-const visionSectionData: TextSectionBlockType = {
-  type: "text-section",
-  version: 1,
-  data: {
-    eyebrow: "our vision",
-    eyebrowHandwritten: "ourVision",
-    headline: "food as a way to connect",
-    body: "moku pona began as a passion project by a group of friends who love cooking and wanted a creative way to explore our culinary interests. for us, food is a way to express creativity, share experiences, and connect with others. through our dinner club, we surprise our guests with unique flavors and ingredients, introducing them to diverse cuisines and the stories behind them.",
-    variant: "plain",
-  },
-};
-
 export const meta: Route.MetaFunction = ({ matches, location }) => {
   const metaTags = [
-    { title: "moku pona" },
+    { title: metaText(matches, "landing.metaTitle") },
     {
       name: "description",
-      content:
-        "A dinner society in Zurich, bringing people together through shared meals, stories, and the joy of discovery.",
+      content: metaText(matches, "landing.metaDescription"),
     },
   ] satisfies ReturnType<Route.MetaFunction>;
 
@@ -87,6 +63,31 @@ export const meta: Route.MetaFunction = ({ matches, location }) => {
 
 export default function Index({ loaderData }: Route.ComponentProps) {
   const { events } = loaderData;
+  const t = useText();
+
+  const titleCardData: TitleCardBlockType = {
+    type: "title-card",
+    version: 1,
+    data: {
+      title: t("landing.wordmarkAlt"),
+      // hand-drawn wordmark; `title` above is its alt text
+      logo: { src: "/naive-title.svg", width: 1258, height: 368 },
+      tagline: t("landing.tagline"),
+      scrollCue: { href: "#vision", label: t("landing.scrollCue") },
+    },
+  };
+
+  const visionSectionData: TextSectionBlockType = {
+    type: "text-section",
+    version: 1,
+    data: {
+      eyebrow: t("landing.visionHeading"),
+      eyebrowHandwritten: "ourVision",
+      headline: t("landing.visionHeadline"),
+      body: t("landing.visionBody"),
+      variant: "plain",
+    },
+  };
 
   const now = new Date();
   const { upcoming, past } = partitionEvents(events, now);

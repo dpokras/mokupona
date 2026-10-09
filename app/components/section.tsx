@@ -106,18 +106,18 @@ export function Eyebrow({
 
 export function SectionDivider({
   className,
-  /** When set, the drawn heading replaces `children` as the visible label. */
+  /** When set, the drawn heading is shown and `children` becomes its alt text. */
   handwritten,
   children,
 }: {
   className?: string;
   handwritten?: HandwrittenHeadingName;
-  children: ReactNode;
+  children: string;
 }) {
   return (
     <div className={cn("flex items-center gap-3", className)}>
       {handwritten ? (
-        <HandwrittenHeading name={handwritten} />
+        <HandwrittenHeading name={handwritten} alt={children} />
       ) : (
         <Eyebrow variant="tracked" tone="label">
           {children}

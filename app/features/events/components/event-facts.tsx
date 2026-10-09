@@ -8,6 +8,8 @@ import {
 import { formatEventDateLine } from "../date-format";
 import type { SerializableDate } from "../view-models";
 
+import { useText } from "~/features/site-content/site-text";
+
 export function EventDateHeading({ date }: { date: SerializableDate }) {
   const eventDate = new Date(date);
 
@@ -22,30 +24,40 @@ export function EventDateHeading({ date }: { date: SerializableDate }) {
 }
 
 export function EventLocationFact({ addressLine }: { addressLine: string }) {
+  const t = useText();
+
   return (
     <span className="flex items-center gap-2">
       <MapPinIcon className="text-muted-foreground size-4" />
-      <span className="sr-only">location</span>
+      <span className="sr-only">{t("dinner.locationLabel")}</span>
       <span>{addressLine}</span>
     </span>
   );
 }
 
 export function EventPriceFact({ price }: { price: number }) {
+  const t = useText();
+
   return (
     <span className="flex items-center gap-2">
       <CreditCardIcon className="text-muted-foreground size-4" />
-      <span className="sr-only">price</span>
-      {price} chf
+      <span className="sr-only">{t("dinner.priceLabel")}</span>
+      {t("dinner.price", { price })}
     </span>
   );
 }
 
 export function EventSeatsFact({ slots }: { slots: number }) {
+  const t = useText();
+
   return (
     <span className="flex items-center gap-2">
       <UserIcon className="text-muted-foreground size-4" />
-      <span>{slots} seats</span>
+      <span>
+        {t(slots === 1 ? "dinner.seatsOne" : "dinner.seatsMany", {
+          count: slots,
+        })}
+      </span>
     </span>
   );
 }

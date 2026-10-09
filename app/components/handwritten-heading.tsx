@@ -2,25 +2,22 @@ import { cn } from "~/lib/utils";
 
 /**
  * The hand-drawn section headings, with the intrinsic size of each file so
- * the browser can reserve space before it loads. `alt` carries the words the
- * artwork spells, which is what a screen reader announces in place of it.
+ * the browser can reserve space before it loads. Callers pass `alt`: the words
+ * the artwork spells, which a screen reader announces in place of it.
  */
 export const handwrittenHeadings = {
   ourVision: {
     src: "/our_vision.svg",
-    alt: "our vision",
     width: 1064,
     height: 273,
   },
   nextDinner: {
     src: "/next_dinner.svg",
-    alt: "the next dinner",
     width: 1043,
     height: 325,
   },
   pastDinners: {
     src: "/past_dinners.svg",
-    alt: "past dinners",
     width: 1074,
     height: 351,
   },
@@ -30,12 +27,14 @@ export type HandwrittenHeadingName = keyof typeof handwrittenHeadings;
 
 export function HandwrittenHeading({
   name,
+  alt,
   className,
 }: {
   name: HandwrittenHeadingName;
+  alt: string;
   className?: string;
 }) {
-  const { src, alt, width, height } = handwrittenHeadings[name];
+  const { src, width, height } = handwrittenHeadings[name];
 
   return (
     <img

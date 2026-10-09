@@ -15,6 +15,7 @@ import { SecondaryCTA } from "~/components/section";
 import { Badge } from "~/components/ui/badge";
 import { buttonVariants } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
+import { useText } from "~/features/site-content/site-text";
 
 export function FeaturedEventCard({
   event,
@@ -26,6 +27,8 @@ export function FeaturedEventCard({
   isNext?: boolean;
   showFacts?: boolean;
 }) {
+  const t = useText();
+
   return (
     // No panel: the photograph and the type sit straight on the paper, and
     // the column gap does the separating a card fill used to do.
@@ -39,7 +42,7 @@ export function FeaturedEventCard({
         />
         {isNext ? (
           <Badge pill className="absolute top-0 left-0">
-            next dinner
+            {t("dinners.nextDinnerBadge")}
           </Badge>
         ) : null}
       </div>
@@ -68,10 +71,10 @@ export function FeaturedEventCard({
             to={`/dinners/${event.id}#sign-up`}
             className={buttonVariants()}
           >
-            reserve a seat
+            {t("dinners.reserveButton")}
           </Link>
           <SecondaryCTA to={`/dinners/${event.id}`} className="max-md:hidden">
-            read more →
+            {t("dinners.readMoreLink")}
           </SecondaryCTA>
         </div>
       </div>
@@ -80,6 +83,7 @@ export function FeaturedEventCard({
 }
 
 export function CompactEventCard({ event }: { event: EventCardModel }) {
+  const t = useText();
   const eventDate = new Date(event.date);
   const hasGallery = event.galleryImageCount > 0;
 
@@ -105,8 +109,12 @@ export function CompactEventCard({ event }: { event: EventCardModel }) {
         {hasGallery ? <span aria-hidden="true">·</span> : null}
         {hasGallery ? (
           <span>
-            {event.galleryImageCount}{" "}
-            {event.galleryImageCount === 1 ? "photo" : "photos"}
+            {t(
+              event.galleryImageCount === 1
+                ? "dinners.photoCountOne"
+                : "dinners.photoCountMany",
+              { count: event.galleryImageCount },
+            )}
           </span>
         ) : null}
       </span>

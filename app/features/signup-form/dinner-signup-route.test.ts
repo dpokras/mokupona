@@ -1,5 +1,7 @@
+// @vitest-environment node
+
 import { RouterContextProvider } from "react-router";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
 import { buildEventData } from "../../../test/factories";
 
@@ -10,9 +12,12 @@ import {
   HONEYPOT_VALID_FROM_FIELD_NAME,
 } from "~/features/forms/honeypot";
 import { getHoneypotInputProps } from "~/features/forms/honeypot.server";
+import { dinnerTexts } from "~/features/site-content/catalog/dinner";
+import { saveCategoryTexts } from "~/features/site-content/site-texts.server";
 import { createEvent } from "~/models/event.server";
 import { getCurrentFormVersion } from "~/models/form.server";
 import { action } from "~/routes/dinners_.$dinnerId";
+import { getToast } from "~/utils/toast.server";
 
 async function createDinner() {
   const event = await createEvent(await buildEventData());
@@ -63,10 +68,26 @@ function expectSuccessRedirect(result: Awaited<ReturnType<typeof action>>) {
   expect(response.headers.get("location")).toBe("/dinners");
 }
 
+async function readToast(result: Awaited<ReturnType<typeof action>>) {
+  const cookie = (result as Response).headers.get("set-cookie") ?? "";
+  const { toast } = await getToast(
+    new Request("http://localhost:3000/dinners", {
+      headers: { cookie: cookie.split(";")[0] },
+    }),
+  );
+  return toast;
+}
+
 function readFormErrors(result: Awaited<ReturnType<typeof action>>) {
   const reply = result as { error?: Record<string, string[] | null> | null };
   return reply.error?.[""] ?? [];
 }
+
+afterEach(async () => {
+  await saveCategoryTexts("dinner", {
+    signupSuccessTitle: dinnerTexts.entries.signupSuccessTitle.default,
+  });
+});
 
 describe("dinner signup action", () => {
   it("stores a submission carrying a freshly minted stamp", async () => {
@@ -123,5 +144,23 @@ describe("dinner signup action", () => {
 
     expect(readFormErrors(result)).toEqual([HONEYPOT_RETRY_MESSAGE]);
     expect(await storedFor(versionId)).toHaveLength(0);
+  });
+
+  it("confirms with the admin's texts, for real and trapped signups alike", async () => {
+    await saveCategoryTexts("dinner", { signupSuccessTitle: "you're in" });
+    const { dinnerId, versionId } = await createDinner();
+
+    const real = await submit(dinnerId, fromBrowser(answers(versionId)));
+    const trapped = await submit(dinnerId, {
+      ...fromBrowser(answers(versionId)),
+      [HONEYPOT_FIELD_NAME]: "https://buy-cheap-pills.example",
+    });
+
+    expect(await readToast(real)).toEqual({
+      title: "you're in",
+      description: dinnerTexts.entries.signupSuccessBody.default,
+      type: "success",
+    });
+    expect(await readToast(trapped)).toEqual(await readToast(real));
   });
 });

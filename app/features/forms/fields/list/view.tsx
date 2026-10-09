@@ -6,6 +6,7 @@ import { getViewForNonListField } from "../non-list";
 import type { ListFieldSchema } from "./model";
 
 import { ErrorList, FieldDescription } from "~/components/forms";
+import { useText } from "~/features/site-content/site-text";
 
 type ListItem = Record<string, unknown>;
 
@@ -19,6 +20,7 @@ export function ListField({
   fieldMetadata: metadata,
 }: ListFieldProps) {
   const form = useFormMetadata();
+  const t = useText();
   const { label, description, maxCount, addLabel, removeLabel, itemFields } =
     config.data;
 
@@ -34,7 +36,7 @@ export function ListField({
         <div className="flex items-center justify-between">
           <span className="text-muted-foreground text-sm">{label}</span>
           <span className="text-muted-foreground text-xs">
-            up to {maxCount}
+            {t("dinner.listFieldLimit", { count: maxCount })}
           </span>
         </div>
         <FieldDescription>{description}</FieldDescription>

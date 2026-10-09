@@ -24,12 +24,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "~/components/ui/popover";
+import { useText } from "~/features/site-content/site-text";
 
 export interface EventViewProps {
   event: EventDetailModel;
 }
 
 export function EventStory({ event }: EventViewProps) {
+  const t = useText();
+
   return (
     <div className="flex min-w-0 flex-col gap-5 md:gap-6">
       <CoverImage
@@ -52,7 +55,9 @@ export function EventStory({ event }: EventViewProps) {
         <Accordion defaultValue={["menu"]} className="mt-2 border-t">
           {event.menuDescription ? (
             <AccordionItem value="menu">
-              <AccordionTrigger className="text-primary">menu</AccordionTrigger>
+              <AccordionTrigger className="text-primary">
+                {t("dinner.menuHeading")}
+              </AccordionTrigger>
               <AccordionContent className="pb-6">
                 <p className="text-foreground/80 text-base font-light whitespace-pre-line">
                   <AutoLink text={event.menuDescription} />
@@ -64,7 +69,7 @@ export function EventStory({ event }: EventViewProps) {
           {event.donationDescription ? (
             <AccordionItem value="donation">
               <AccordionTrigger className="text-primary">
-                donation
+                {t("dinner.donationHeading")}
               </AccordionTrigger>
               <AccordionContent className="pb-6">
                 <p className="text-foreground/80 text-base font-light whitespace-pre-line">
@@ -80,6 +85,7 @@ export function EventStory({ event }: EventViewProps) {
 }
 
 export function EventFactList({ event }: EventViewProps) {
+  const t = useText();
   const eventDate = new Date(event.date);
 
   return (
@@ -99,13 +105,13 @@ export function EventFactList({ event }: EventViewProps) {
         <Popover>
           <PopoverTrigger>
             <span className="text-primary border-primary/60 flex items-center gap-1 border-b border-dotted text-xs">
-              discounts
+              {t("dinner.discountsButton")}
               <InfoIcon className="size-4" />
             </span>
           </PopoverTrigger>
           <PopoverContent>
             <p className="text-sm whitespace-pre-line">
-              {event.discounts ?? "no discounts currently available"}
+              {event.discounts ?? t("dinner.noDiscounts")}
             </p>
           </PopoverContent>
         </Popover>

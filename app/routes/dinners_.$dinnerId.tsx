@@ -6,7 +6,7 @@ import {
 } from "@conform-to/react";
 import { getZodConstraint, parseWithZod } from "@conform-to/zod/v4";
 import { useMemo } from "react";
-import { Form, Link } from "react-router";
+import { Form } from "react-router";
 
 import type { Route } from "./+types/dinners_.$dinnerId";
 
@@ -30,6 +30,9 @@ import { parseStoredFormSchemaOrLog } from "~/features/forms/serialization.serve
 import { EventGallerySection } from "~/features/gallery/components/event-gallery-section";
 import { loadEventGallerySection } from "~/features/gallery/event-section.server";
 import { buildSignupSchema } from "~/features/signup-form/build-schema";
+import { PrivacyConsentLabel } from "~/features/signup-form/privacy-consent-label";
+import { metaText, useText } from "~/features/site-content/site-text";
+import { getServerText } from "~/features/site-content/site-texts.server";
 import { cn } from "~/lib/utils";
 import { getEventWithCurrentFormVersion } from "~/models/event.server";
 import {
@@ -68,11 +71,13 @@ const FORM_CHANGED_ERROR =
 
 // shared with the spam-trap response, which must be indistinguishable from a
 // real success
-const SIGNUP_SUCCESS_TOAST = {
-  title: "Signup complete",
-  description: "We'll contact you if you were able to get a spot on the event.",
-  type: "success",
-} as const;
+async function redirectWithSignupSuccess() {
+  return redirectWithToast("/dinners", {
+    title: await getServerText("dinner.signupSuccessTitle"),
+    description: await getServerText("dinner.signupSuccessBody"),
+    type: "success",
+  });
+}
 
 export async function action({ params, request, context }: Route.ActionArgs) {
   const { dinnerId } = params;
@@ -108,7 +113,7 @@ export async function action({ params, request, context }: Route.ActionArgs) {
       "Blocked dinner signup caught by the spam trap",
     );
 
-    return redirectWithToast("/dinners", SIGNUP_SUCCESS_TOAST);
+    return redirectWithSignupSuccess();
   }
 
   const submission = parseWithZod(formData, { schema });
@@ -203,13 +208,13 @@ export async function action({ params, request, context }: Route.ActionArgs) {
     "Successful submission for dinner signup",
   );
 
-  return redirectWithToast("/dinners", SIGNUP_SUCCESS_TOAST);
+  return redirectWithSignupSuccess();
 }
 
 export const meta: Route.MetaFunction = ({ loaderData, matches, location }) => {
   const metaTags = [
     {
-      title: "Dinner",
+      title: metaText(matches, "dinner.metaTitleFallback"),
     },
   ];
 
@@ -217,7 +222,7 @@ export const meta: Route.MetaFunction = ({ loaderData, matches, location }) => {
 
   const { event } = loaderData;
   const tags = [
-    { title: `Dinner - ${event.title}` },
+    { title: metaText(matches, "dinner.metaTitle", { title: event.title }) },
     { property: "og:title", content: event.title },
     { property: "og:type", content: "website" },
   ];
@@ -236,6 +241,7 @@ export default function DinnerPage({
   actionData,
 }: Route.ComponentProps) {
   const { event, formFields, formVersionId, gallery } = loaderData;
+  const t = useText();
 
   const eventIsPast = isPastEvent(new Date(event.date), new Date());
   const signupFields = eventIsPast ? null : formFields;
@@ -247,7 +253,7 @@ export default function DinnerPage({
   return (
     <PageContainer className="grow pt-7 pb-20">
       <BackLink to="/dinners" className="mb-6">
-        all dinners
+        {t("dinner.backLink")}
       </BackLink>
 
       <div className={gridClasses}>
@@ -265,7 +271,9 @@ export default function DinnerPage({
             <>
               <div aria-hidden className="bg-border h-px" />
 
-              <h2 className="text-xl font-light">reserve your seat</h2>
+              <h2 className="text-xl font-light">
+                {t("dinner.signupHeading")}
+              </h2>
 
               <SignupForm
                 key={JSON.stringify(signupFields)}
@@ -292,6 +300,7 @@ function SignupForm({
   formVersionId: string;
   lastResult: Route.ComponentProps["actionData"];
 }) {
+  const t = useText();
   const schema = useMemo(() => buildSignupSchema(formFields), [formFields]);
 
   const [form, fields] = useForm({
@@ -329,16 +338,7 @@ function SignupForm({
         })}
 
         <CheckboxField
-          labelProps={{
-            children: (
-              <span className="text-sm">
-                i agree to the{" "}
-                <Link to="/privacy" className="text-primary">
-                  privacy policy
-                </Link>
-              </span>
-            ),
-          }}
+          labelProps={{ children: <PrivacyConsentLabel /> }}
           buttonProps={{
             ...getInputProps(fields.acceptedPrivacy, {
               type: "checkbox",
@@ -350,11 +350,11 @@ function SignupForm({
         <ErrorList id={form.errorId} errors={form.errors} />
 
         <Button type="submit" size="lg" className="w-full">
-          join this dinner
+          {t("dinner.signupButton")}
         </Button>
 
         <p className="text-muted-foreground text-center text-xs leading-normal">
-          we&apos;ll email you to confirm if a seat is yours.
+          {t("dinner.signupNote")}
         </p>
       </Form>
     </FormProvider>

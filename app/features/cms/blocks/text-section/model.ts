@@ -7,7 +7,7 @@ const BLOCK_VERSION = 1;
 
 type TextSectionBlockData = {
   eyebrow?: string;
-  /** A drawn heading, shown in place of the `eyebrow` text when set. */
+  /** A drawn heading, shown in place of the `eyebrow` text, which becomes its alt text. */
   eyebrowHandwritten?: HandwrittenHeadingName;
   headline: string;
   body: string;

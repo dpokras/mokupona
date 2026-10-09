@@ -18,7 +18,7 @@ export function TitleCardBlockView({
   className,
   ...rest
 }: TitleCardBlockViewProps) {
-  const { title, logo, tagline, scrollTo } = blockData.data;
+  const { title, logo, tagline, scrollCue } = blockData.data;
 
   return (
     <section
@@ -60,18 +60,18 @@ export function TitleCardBlockView({
         ) : null}
       </div>
 
-      {scrollTo ? <ScrollCue href={scrollTo} /> : null}
+      {scrollCue ? <ScrollCue {...scrollCue} /> : null}
     </section>
   );
 }
 
-function ScrollCue({ href }: { href: string }) {
+function ScrollCue({ href, label }: { href: string; label: string }) {
   return (
     <a
       href={href}
       className="text-muted-foreground hover:text-foreground focus-visible:ring-ring mt-20 flex flex-col items-center gap-2 rounded-md px-3 py-2 text-xs tracking-[0.2em] uppercase transition-colors focus-visible:ring-2 focus-visible:outline-hidden md:mt-28"
     >
-      <span>scroll</span>
+      <span>{label}</span>
       <svg
         viewBox="0 0 24 30"
         fill="none"
