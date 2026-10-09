@@ -26,6 +26,7 @@ import {
 import { getHoneypotInputProps } from "~/features/forms/honeypot.server";
 import { MatchedSiteTextProvider } from "~/features/site-content/site-text";
 import { loadRootSiteTexts } from "~/features/site-content/site-texts.server";
+import { PageViewBeacon } from "~/features/visits/page-view-beacon";
 import stylesheet from "~/tailwind.css?url";
 
 export const links: LinksFunction = () => [
@@ -129,6 +130,7 @@ function Document({
           <Outlet />
         </div>
         <Footer />
+        <PageViewBeacon />
       </div>
     </MatchedSiteTextProvider>
   );

@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { faker } from "@faker-js/faker";
 
 import { seedFaq } from "./seed-faq";
+import { seedVisits } from "./seed-visits";
 
 import { prisma } from "~/db.server";
 import { createUserViaAuth } from "~/features/auth/create-user.server";
@@ -202,6 +203,8 @@ async function seed() {
     pastEvent.id,
     await storeGalleryImages(7, "hands and glasses, frame"),
   );
+
+  await seedVisits({ upcomingDinnerId: event.id, pastDinnerId: pastEvent.id });
 
   // Volunteers for the public hall of fame. Portraits are flat SVG squares —
   // enough to exercise the grid without shipping photographs of real people.

@@ -92,6 +92,15 @@ export async function getEventById(
   });
 }
 
+export async function getEventTitles(
+  ids: string[],
+): Promise<{ id: string; title: string }[]> {
+  return prisma.event.findMany({
+    where: { id: { in: ids } },
+    select: { id: true, title: true },
+  });
+}
+
 export async function getEventWithCurrentFormVersion(id: string): Promise<{
   event: EventWithImage & { address: Address };
   version: FormVersion;
