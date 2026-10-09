@@ -24,12 +24,12 @@ import {
   resolveOptionalUserMiddleware,
 } from "~/features/auth/middleware.server";
 import { getHoneypotInputProps } from "~/features/forms/honeypot.server";
-import { useNonce } from "~/shared/nonce";
-import { applySecurityHeaders } from "~/shared/security-headers.server";
 import { loadSiteImages } from "~/features/site-content/site-images.server";
 import { MatchedSiteTextProvider } from "~/features/site-content/site-text";
 import { loadRootSiteTexts } from "~/features/site-content/site-texts.server";
 import { PageViewBeacon } from "~/features/visits/page-view-beacon";
+import { useNonce } from "~/shared/nonce";
+import { applySecurityHeaders } from "~/shared/security-headers.server";
 import stylesheet from "~/tailwind.css?url";
 
 export const links: LinksFunction = () => [
