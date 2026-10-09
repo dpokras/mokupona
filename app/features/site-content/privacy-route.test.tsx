@@ -38,7 +38,7 @@ describe("privacy route", () => {
       "Responsibility",
       "General Information on Data Processing",
       "Provisioning of the Website and Creation of Log Files",
-      "Anonymous Visit Statistics",
+      "Visit Statistics",
       "Use of Cookies",
       "Registration",
       "Signing up for an event",

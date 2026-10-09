@@ -64,7 +64,7 @@ The data will be deleted as soon as it is no longer necessary to achieve the pur
 
 Data collection for the provision of the website and storage of data in log files are essential for the operation of the website. Therefore, users cannot object to this.
 
-## Anonymous Visit Statistics
+## Visit Statistics
 
 ### Description and Scope of Data Processing
 
@@ -77,9 +77,9 @@ When a page of our website is viewed, the following data are recorded:
 3. The type of device used (phone, tablet or computer)
 4. The date of the visit
 
-In addition, an anonymous identifier is computed from the user’s IP address and browser. This identifier changes every day, so we can count how many different people visited on a given day without being able to recognize anyone from one day to the next. The IP address itself is not stored.
+In addition, a pseudonymised identifier is computed from the user’s IP address and browser together with a random value that is replaced every day. Because the random value of earlier days is deleted, we can count how many different people visited on a given day without being able to recognize anyone from one day to the next. The IP address itself is not stored.
 
-Visits by the administrators of this website are not counted.
+Visits from users who are signed in to the website are not counted. If your browser sends a Do Not Track or Global Privacy Control signal, your visits are not counted either.
 
 ### Legal Basis for Data Processing
 
@@ -96,7 +96,7 @@ The data are kept for at most 13 months and then deleted.
 
 ### Objection and Removal Options
 
-The recorded data do not allow us to identify a user, which is why we cannot look up, show or delete the visits of a particular person. If you have questions about the visit statistics, contact us using the contact details provided above.
+The recorded data do not allow us to identify a user, which is why we cannot look up, show or delete the visits of a particular person. To stop your visits from being counted, turn on Do Not Track or Global Privacy Control in your browser. If you have questions about the visit statistics, contact us using the contact details provided above.
 
 ## Use of Cookies
 
