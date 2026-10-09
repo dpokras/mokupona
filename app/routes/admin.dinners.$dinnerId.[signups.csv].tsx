@@ -30,7 +30,7 @@ export async function loader({ params }: Route.LoaderArgs) {
       "Content-Type": data.mimeType,
       "Content-Length": `${data.size}`,
       "Content-Disposition": contentDispositionAttachment(filename),
-      "Cache-Control": "public, max-age=0, immutable",
+      "Cache-Control": "private, no-store",
     },
   });
 }
