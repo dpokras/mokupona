@@ -81,11 +81,30 @@ Already exists (`app/routes/admin*.tsx`): dinners CRUD, locations, board members
 
 ## 12. Guest sign-ups and accounts
 
-- [ ] Login, account and logout links are gone from the public site; `/admin` is the only way in. The public self sign-up page (`/join`) is no longer linked anywhere but still works. Decide whether guests should have accounts at all, and close or repurpose `/join` accordingly (the admin settings page can already switch email sign-ups off).
+- [~] Decided 2026-10-09: accounts are for the team only and come by invitation (Admin, Users). Guests never need an account; they book dinners with the form on each dinner page. `/join` and the check-your-inbox page now redirect to `/login`, the sign-up link is gone, the auth API refuses self sign-up, and a first Google sign-in only creates an account for an email with an open invite. _Built on `claude/todo-list-9o8zmr`, not deployed yet._
 
 ## 13. Follow-ups found while building the admin hub
 
-- [ ] CSV exports (per-dinner signups, all guests) don't guard against spreadsheet formula injection: names come from the public form, so a value starting with `=`, `+`, `-` or `@` could run as a formula in Excel. Careful: phone numbers start with `+`.
+- [~] CSV exports neutralize spreadsheet formulas (phone numbers stay as typed). _Built on `claude/todo-list-9o8zmr`, not deployed yet._
+
+## 14. Security and quality audit (2026-10-09)
+
+Fixed on `claude/todo-list-9o8zmr`, not deployed yet:
+
+- [~] Login and password-reset mails were not rate limited (the form actions bypass better-auth's limiter); dinner signups and page-view beacons now have per-IP limits too
+- [~] better-auth reads the client IP from `Fly-Client-IP` instead of a client-supplied `X-Forwarded-For`
+- [~] `/healthcheck` fetched any host named in the request (SSRF); invite links and canonical URLs trusted `X-Forwarded-Host`
+- [~] `safeRedirect` let `/\host` through (open redirect)
+- [~] Security headers and a nonce-based content security policy on every page; signups CSV no longer publicly cacheable
+- [~] Admin actions that silently failed (location in use, protected user, stale invite) or crashed (admin role change) now say what happened
+- [~] Phone menu is an accessible dialog; skip-to-content link; robots.txt, sitemap.xml, canonical links
+- [~] Patched vulnerable dependencies (proxy-addr, qs, compression, image-size, ...)
+
+Still open:
+
+- [ ] The production container runs as root (cron for log rotation needs it); moving rotation into the app would allow a non-root user
+- [ ] Remaining `npm audit` advisories are in `mysql2` (unused with SQLite) and Prisma's build-time config; they clear when Prisma ships a fix
+- [ ] Cypress e2e could not run in the cloud sandbox (download.cypress.io is blocked there); run `npm run validate` locally before deploying
 
 ---
 
